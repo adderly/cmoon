@@ -32,24 +32,42 @@
     DidaViewController *controller = [[DidaViewController alloc ]init];
     
     tabeViewController = [[UITabBarController alloc] init];
+
     tabeViewController.delegate = self;
     NSMutableArray * childControllers = [[NSMutableArray alloc]initWithCapacity:2];
-    HomeMapController * mapController = [[HomeMapController alloc] init];
-    
-    UITabBarItem * firstItem = [[UITabBarItem alloc]initWithTabBarSystemItem:UITabBarSystemItemFavorites tag:1];
-    mapController.tabBarItem = firstItem;
-    [firstItem release];
-    
-    [childControllers addObject:mapController];
-    [mapController release];
-    
-    UITabBarItem *secondTab = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag:2];
+    UITabBarItem *secondTab = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemFeatured tag:1];
+    secondTab.title = @"看图";
     controller.tabBarItem = secondTab;
     [secondTab release];
     [childControllers addObject:controller];
     [controller release];
     
+    HomeMapController * mapController = [[HomeMapController alloc] init];
+    
+    UITabBarItem * firstItem = [[UITabBarItem alloc]initWithTitle:@"拼车" image:[UIImage imageNamed:@"earth.png"] tag:2];
+    mapController.tabBarItem = firstItem;
+    [firstItem release];
+    
+    [childControllers addObject:mapController];
+    [mapController release];
+
+    
+    BoreController * thirdController = [[BoreController alloc]init];
+    UITabBarItem* thirdTab = [[UITabBarItem alloc]initWithTabBarSystemItem:UITabBarSystemItemFeatured tag:3];
+    thirdTab.title = @"随便看看";
+    thirdController.tabBarItem = thirdTab;
+    [thirdTab release];
+    [childControllers addObject:thirdController];
+    [thirdController release];
+    
+    AboutController * about = [[AboutController alloc]init];
+    UITabBarItem *fourth = [[UITabBarItem alloc]initWithTitle:@"关于" image:[UIImage imageNamed:@"about.png"] tag:4];
+    about.tabBarItem = fourth;
+    [fourth release];
+    [childControllers addObject:about];
+    [about release];
     tabeViewController.viewControllers = childControllers;
+    [tabeViewController setSelectedViewController:mapController];
     _window.rootViewController = tabeViewController;
     [_window makeKeyAndVisible];
     [childControllers release];

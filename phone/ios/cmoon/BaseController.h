@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "ArcHelper.h"
-#import "DidaAppDelegate.h"
+
 
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width

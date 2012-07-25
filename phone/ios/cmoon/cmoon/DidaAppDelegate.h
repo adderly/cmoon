@@ -11,6 +11,8 @@
 #import "DidaNetWorkEngine.h"
 #import "CommomDefine.h"
 #import "ArcHelper.h"
+#import "BoreController.h"
+#import "AboutController.h"
 
 @interface DidaAppDelegate : UIResponder <UIApplicationDelegate,UITabBarControllerDelegate>
 

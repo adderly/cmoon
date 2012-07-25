@@ -61,10 +61,9 @@
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
-
+#pragma 真机才能定位操作
 - (MKAnnotationView *)mapView:(MKMapView *)mV viewForAnnotation:(id <MKAnnotation>)annotation
 {
-    NSLog(@"annotation...");
     MKPinAnnotationView *pinView = nil;
     if (isLocated) {
         static NSString *defaultPinID = @"imdida.org";
@@ -87,7 +86,6 @@
     region.center.longitude = curLoc.longitude == 0.0 ? 115.3476 : curLoc.longitude;
     
     [mapView setRegion:region animated:TRUE];
-    NSLog(@"locationManager...");
     isLocated = true;
     [mLocationMgr stopUpdatingLocation];//结束更新
 }
@@ -100,7 +98,7 @@
         [mLocationMgr release];
         mLocationMgr = nil;
     }
-    [super dealloc];
+    //[super dealloc];
 }
 
 @end

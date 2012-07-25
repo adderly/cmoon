@@ -75,8 +75,4 @@ Connection:keep-alive
     [[NSNotificationCenter defaultCenter] postNotificationName:@"networkrequesterror" object:error.description  userInfo:nil];
 }
 
--(void)dealloc {
-    [super dealloc];
-}
-
 @end

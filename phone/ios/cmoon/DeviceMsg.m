@@ -84,7 +84,7 @@ static DeviceMsg * instance = nil;
     bundleVersion = nil;
     phoneType = nil;
     systemVersion = nil;
-    [super dealloc];
+//    [super dealloc];
 }
 @end
 
