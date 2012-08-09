@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>FunctionTest.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>cmoon.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +17,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>1428AFD715B8088000C723BB</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>14AA4757155B665A009324FD</key>
 		<dict>
 			<key>primary</key>

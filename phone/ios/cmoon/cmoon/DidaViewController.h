@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "HttpSendAction.h"
+#import "DidaAppDelegate.h"
+
 
 @interface DidaViewController : UIViewController
 
