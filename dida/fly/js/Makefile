@@ -14,7 +14,7 @@ FILES = b/base.js \
         b/bore/bore.js b/bore/op.js \
         b/plan/info.js b/plan/mine.js \
         b/inbox/system.js \
-        b/system/ie.js b/system/view.js b/system/comment.js
+        b/system/ie.js b/system/view.js b/system/comment.js b/system/plan.js
 
 all: preload $(FILES)
 
@@ -82,8 +82,10 @@ b/system/view.js: pub/jquerytools/src/dateinput/dateinput.js \
                   pub/jquery.mntable.js pub/jquery.tablesorter.js \
                   pub/flot/jquery.flot.js system/view.js
 b/system/comment.js: pub/jquerytools/src/dateinput/dateinput.js \
-                  pub/jquery.mntable.js pub/jquery.tablesorter.js \
-                  pub/flot/jquery.flot.js system/comment.js
+                  system/comment.js
+b/system/plan.js: pub/jquerytools/src/dateinput/dateinput.js \
+                  pub/jquery.mnnav.js \
+                  system/plan.js
 
 %.js:
 	@echo -n > $@

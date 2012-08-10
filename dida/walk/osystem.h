@@ -35,9 +35,21 @@ NEOERR* system_view_detail_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *
 /*
  * Description: 查看系统评论
  * Request: ADMIN* - see MEMBER_CHECK_ADMIN() of member.h
+ *          type - 评论类型
+ *          times - 起始日期
+ *          timee - 结束日期
  * Returns: None
  */
 NEOERR* system_comment_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses);
+
+/*
+ * Description: 查看路线
+ * Request: ADMIN* - see MEMBER_CHECK_ADMIN() of member.h
+ *          times - 起始日期
+ *          timee - 结束日期
+ * Returns: None
+ */
+NEOERR* system_plan_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses);
 
 __END_DECLS
 #endif /* __OSYSTEM_H__ */

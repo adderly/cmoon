@@ -154,3 +154,39 @@ NEOERR* system_comment_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 
     return STATUS_OK;
 }
+
+NEOERR* system_plan_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
+{
+    mdb_conn *db = hash_lookup(dbh, "plan");
+    STRING str; string_init(&str);
+    int count, offset;
+    char *mname;
+    HDF *node;
+    NEOERR *err;
+
+    MCS_NOT_NULLB(cgi->hdf, db);
+    
+    MEMBER_CHECK_ADMIN();
+    SET_DASHBOARD_ACTION(cgi->hdf);
+
+    hdf_get_node(cgi->hdf, PRE_OUTPUT, &node);
+
+    mdb_pagediv(hdf_get_obj(cgi->hdf, PRE_QUERY),
+                NULL, &count, &offset, NULL, node);
+
+    err = mdb_build_querycond(hdf_get_obj(cgi->hdf, PRE_QUERY),
+                              hdf_get_obj(g_cfg, "Db.QueryCond.system.plan"),
+                              &str, "intime > current_date - 1");
+    if (err != STATUS_OK) return nerr_pass(err);
+
+    MDB_PAGEDIV_SET_N(node, db, "plan", "%s", NULL, str.buf);
+
+    MDB_QUERY_RAW(db, "plan", _COL_PLAN_ADMIN,
+                  "%s ORDER BY id DESC LIMIT %d OFFSET %d",
+                  NULL, str.buf, count, offset);
+    err = mdb_set_rows(cgi->hdf, db, _COL_PLAN_ADMIN, PRE_OUTPUT".rows",
+                       NULL, MDB_FLAG_EMPTY_OK);
+    if (err != STATUS_OK) return nerr_pass(err);
+
+    return STATUS_OK;
+}

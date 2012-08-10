@@ -10,7 +10,7 @@ Dataset {
         }
         2 {
             name = 路线
-            href = /system/leave
+            href = /system/plan
         }
         3 {
             name = 注册

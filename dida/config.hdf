@@ -68,6 +68,12 @@ Db {
                 times = intime >
                 timee = intime <
             }
+            plan {
+                statu [type=int] = statu =
+                repeat [type=int] = repeat =
+                times = intime >
+                timee = intime <
+            }
         }
     }
     UpdateCol {

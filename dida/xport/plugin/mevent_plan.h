@@ -14,14 +14,14 @@
 
 #define _COL_PLAN "id, mid, ori, ourl, dad, nick, statu, repeat, subscribe, seat, " \
     " fee, attach, cityid, scityid, ecityid, saddr, eaddr, marks, rect, route, " \
-    " km, sdate, edate, stime, etime, estmin, "                         \
+    " round(km, 1) as km, sdate, edate, stime, etime, estmin, "         \
     " to_char(intime, 'YYYY-MM-DD') as intime, "                        \
     " to_char(uptime, 'YYYY-MM-DD') as uptime "
 
 #define _COL_PLAN_ADMIN "id, mid, phone, contact, ori, ourl, "          \
     " dad, nick, statu, repeat, subscribe, seat, "                      \
     " fee, attach, cityid, scityid, ecityid, saddr, eaddr, marks, rect, route, " \
-    " km, sdate, edate, stime, etime, estmin, "                         \
+    " round(km, 1) as km, sdate, edate, stime, etime, estmin, "         \
     " to_char(intime, 'YYYY-MM-DD') as intime, "                        \
     " to_char(uptime, 'YYYY-MM-DD') as uptime "
 

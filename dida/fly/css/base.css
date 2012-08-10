@@ -50,6 +50,7 @@ table.list {border: 1px solid #CCCCCC; border-collapse:collapse; width:100%;}
 table.list th {background-color: #eee; border-left:1px solid #CCCCCC; border-bottom:1px solid #CCCCCC; padding:4px 4px; text-align:center; width:auto;}
 table.list td {border-left:1px solid #CCCCCC; border-bottom:1px solid #CCCCCC; padding:4px 4px;}
 table.list td span {margin-left: 10px;}
+table.list td img {vertical-align: middle;}
 table.list tr:hover {background-color: #FFFFCC;}
 
 .hide {display: none !important;}
@@ -94,6 +95,8 @@ table.list tr:hover {background-color: #FFFFCC;}
 .mr5 {margin-right: 5em;}
 .ml2 {margin-left: 2em;}
 .ml5 {margin-left: 5em;}
+.mt2 {margin-top: 2ex;}
+.mb2 {margin-bottom: 2ex;}
 
 .pr2 {padding-right: 2em;}
 .pr5 {padding-right: 5em;}

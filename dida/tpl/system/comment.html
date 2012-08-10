@@ -27,8 +27,8 @@
         <?cs each:r = Output.rows ?>
         <li class="clearfix">
           <div class="title">
-            <?cs var:r.author ?> <?cs var:r.intime ?> 对 <?cs
-            call:comment_type(r.type) ?> <a href="<?cs call:comment_href(r.type, r.oid) ?>"><?cs var: r.otitle ?></a> 评论
+            <?cs var:r.author ?> <?cs var:r.intime ?> 评论 <?cs
+            call:comment_type(r.type) ?> <a href="<?cs call:comment_href(r.type, r.oid) ?>"><?cs var: r.otitle ?></a>
           </div>
           <div class="details">
             <p class="pre"><?cs var:html_escape(r.content) ?></p>
