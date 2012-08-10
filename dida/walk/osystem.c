@@ -24,7 +24,7 @@ NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
      */
     hdf_set_int_value(cgi->hdf, PRE_QUERY".type", TRACE_TYPE_PAGEVIEW);
     HDF_FETCH_STR(cgi->hdf, PRE_QUERY".times", s);
-    if (!s) hdf_set_value(cgi->hdf, PRE_QUERY".timed", "current_date -7");
+    if (!s) hdf_set_value(cgi->hdf, PRE_QUERY".timed", "current_date - 2");
     err = mdb_build_querycond(hdf_get_obj(cgi->hdf, PRE_QUERY),
                               hdf_get_obj(g_cfg, "Db.QueryCond.system.view"),
                               &str, NULL);
@@ -124,6 +124,33 @@ NEOERR* system_view_detail_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *
     string_clear(&str);
 
     hdf_set_attr(cgi->hdf, PRE_OUTPUT".details", "type", "array");
+
+    return STATUS_OK;
+}
+
+NEOERR* system_comment_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
+{
+    mdb_conn *db = hash_lookup(dbh, "aux");
+    STRING str; string_init(&str);
+    char *mname;
+    NEOERR *err;
+
+    MCS_NOT_NULLB(cgi->hdf, db);
+    
+    MEMBER_CHECK_ADMIN();
+    SET_DASHBOARD_ACTION(cgi->hdf);
+
+    if (!hdf_get_value(cgi->hdf, PRE_QUERY".times", NULL))
+        hdf_set_value(cgi->hdf, PRE_QUERY".timed", "current_date - 7");
+    err = mdb_build_querycond(hdf_get_obj(cgi->hdf, PRE_QUERY),
+                              hdf_get_obj(g_cfg, "Db.QueryCond.system.comment"),
+                              &str, NULL);
+    if (err != STATUS_OK) return nerr_pass(err);
+
+    MDB_QUERY_RAW(db, "comment", _COL_CMT, "%s ORDER BY id DESC", NULL, str.buf);
+    err = mdb_set_rows(cgi->hdf, db, _COL_CMT, PRE_OUTPUT".rows",
+                       NULL, MDB_FLAG_EMPTY_OK);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     return STATUS_OK;
 }

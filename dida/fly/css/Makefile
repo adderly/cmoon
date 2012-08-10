@@ -10,7 +10,7 @@ FILES = b/base.css \
         b/bore/bore.css b/bore/op.css \
         b/plan/info.css b/plan/mine.css \
         b/inbox/system.css b/inbox/private.css b/inbox/sent.css \
-        b/system/view.css
+        b/system/view.css b/system/comment.css
 
 all: preload $(FILES)
 
@@ -62,6 +62,9 @@ b/inbox/sent.css: modules/accordion.css modules/box.css modules/pagenav.css \
 b/system/view.css: modules/accordion.css modules/box.css \
                    modules/dateinput/dateinput.css modules/tablesorter/tablesorter.css \
                    system/system.css
+b/system/comment.css: modules/accordion.css modules/box.css \
+                   modules/dateinput/dateinput.css \
+                   system/system.css system/comment.css
 
 %.css:
 	$(CSSGLUE) $^ > $@

@@ -58,6 +58,16 @@ Db {
                 sender [maxlen=256, require=true] = sender =
                 day = date_trunc('day', intime) =
             }
+            comment {
+                type [type=int] = type =
+                statu [type=int] = statu =
+                oid [type=int] = oid =
+                pid [type=int] = pid =
+                author = author =
+                timed [type=raw] = intime >
+                times = intime >
+                timee = intime <
+            }
         }
     }
     UpdateCol {

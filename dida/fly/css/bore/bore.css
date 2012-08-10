@@ -6,15 +6,6 @@ ul.commentnew li {
     margin: 3px 0;
 }
 
-ul.commentnew li.loading .indicator {
-    display:inline-block;margin-left:5px;width:16px;height:16px;background:url(/img/ajax/indicator.gif) 0 0 no-repeat;
-}
-ul.commentnew li.success .indicator {
-    display:inline-block;margin-left:5px;width:16px;height:16px;background:url(/img/ajax/success.png) 0 0 no-repeat
-}
-ul.commentnew li.error .indicator {
-    display:inline-block;margin-left:5px;width:16px;height:16px;background:url(/img/ajax/error.png) 0 0 no-repeat;
-}
 textarea.content {
     height: 150px;
     width: 520px;

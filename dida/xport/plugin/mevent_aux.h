@@ -12,7 +12,7 @@
     " to_char(intime, 'YYYY-MM-DD') as intime, "                        \
     " to_char(uptime, 'YYYY-MM-DD') as uptime "
 
-#define _COL_CMT "id, type, oid, pid, ip, addr, author, content, "    \
+#define _COL_CMT "id, type, oid, otitle, pid, ip, addr, author, content, " \
     " to_char(intime, 'YYYY-MM-DD HH24:MI:SS') as intime, "           \
     " to_char(uptime, 'YYYY-MM-DD HH24:MI:SS') as uptime "
 

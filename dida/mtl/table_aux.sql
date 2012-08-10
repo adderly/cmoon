@@ -22,6 +22,7 @@ CREATE TABLE comment (
     statu int NOT NULL DEFAULT 0,
 
     oid int NOT NULL DEFAULT 0, --object id
+    otitle varchar(256) NOT NULL DEFAULT '', --object title
     pid int NOT NULL DEFAULT 0,
 
     ip varchar(64) NOT NULL DEFAULT '',

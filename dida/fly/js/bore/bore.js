@@ -106,7 +106,7 @@ bmoon.bore = {
 
         $.post('/json/comment',
                {
-                   _op: 'add', type: 0, oid: mgd.id, pid: 0,
+                   _op: 'add', type: 0, oid: mgd.id, otitle: mgd.title, pid: 0,
                    author: o.author,
                    content: content
                },

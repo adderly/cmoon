@@ -194,6 +194,7 @@ Plugin {
                 type [type=int, require=true] = type
 
                 oid [type=int, require=true] = oid
+                otitle [maxlen=256] = otitle
                 pid [type=int] = pid
 
                 ip [maxlen=64] = ip

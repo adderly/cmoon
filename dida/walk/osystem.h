@@ -32,5 +32,12 @@ NEOERR* system_who_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses);
  */
 NEOERR* system_view_detail_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses);
 
+/*
+ * Description: 查看系统评论
+ * Request: ADMIN* - see MEMBER_CHECK_ADMIN() of member.h
+ * Returns: None
+ */
+NEOERR* system_comment_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses);
+
 __END_DECLS
 #endif /* __OSYSTEM_H__ */

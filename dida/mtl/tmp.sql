@@ -1,1 +1,1 @@
-alter table car add column carstatu smallint not null default 0;
+alter table comment add column otitle varchar(256) not null default '';
