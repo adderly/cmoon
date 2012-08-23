@@ -48,7 +48,7 @@ bmoon.dida = {
             s: '访问',
             v: function(t) {
                 return [
-                    '<a target="_blank" href="', t.es_one, t.es_two, '">',
+                    '<a target="_blank" title="', t.es_one, '" href="', t.es_two, '">',
                         t.es_three,
                     '</a>'
                 ].join('');
@@ -259,8 +259,8 @@ bmoon.dida = {
             browser: o.getBrowserType(),
             bversion: $.browser.version,
 
-            es_one: bmoon.utl.urlclean,
-            es_two: bmoon.utl.urlparm,
+            //es_one: bmoon.utl.urlclean, es_one for refer
+            es_two: bmoon.utl.url,
             es_three: bmoon.utl.title
         }, pdata || {});
         

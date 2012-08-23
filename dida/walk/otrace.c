@@ -27,13 +27,14 @@ NEOERR* trace_event(HDF *node, HASH *evth, session_t *ses, int type)
 
 NEOERR* trace_data_add(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
-    mevent_t *evt = hash_lookup(evth, "trace");
+    HDF *node = hdf_get_obj(cgi->hdf, PRE_QUERY);
 
-    MCS_NOT_NULLB(cgi->hdf, evt);
+    MCS_NOT_NULLA(node);
+    
+    int type = hdf_get_int_value(node, "type", TRACE_TYPE_PAGEVIEW);
 
-    hdf_copy(evt->hdfsnd, NULL, hdf_get_obj(cgi->hdf, PRE_QUERY));
-
-    MEVENT_TRIGGER(evt, NULL, REQ_CMD_TRACE_ADD, FLAGS_NONE);
-
-    return STATUS_OK;
+    char *refer = hdf_get_value(cgi->hdf, PRE_HTTP".Referer", NULL);
+    if (refer) hdf_set_value(node, "es_one", refer);
+    
+    return nerr_pass(trace_event(node, evth, ses, type));
 }

@@ -28,10 +28,10 @@ bmoon.planinfo = {
         var o = bmoon.planinfo.init();
 
         if (mgd.ori > 0) {
-            if (mgd.ourl) o.e_mc_from.attr('href', mgd.ourl);
-            else o.e_mc_from.attr('href', domains[mgd.ori].url);
-            o.e_mc_from.attr('title', '数据来源：　' + domains[mgd.ori].title);
-            $('<img/>').attr('src', domains[mgd.ori].img).appendTo(o.e_mc_from);
+            if (mgd.ourl) o.e_plan_from.attr('href', mgd.ourl);
+            else o.e_plan_from.attr('href', domains[mgd.ori].url);
+            o.e_plan_from.attr('title', '数据来源：　' + domains[mgd.ori].title);
+            $('<img/>').attr('src', domains[mgd.ori].img).appendTo(o.e_plan_from);
         }
     }
 };
