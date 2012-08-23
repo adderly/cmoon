@@ -259,7 +259,7 @@ bmoon.dida = {
             browser: o.getBrowserType(),
             bversion: $.browser.version,
 
-            //es_one: bmoon.utl.urlclean, es_one for refer
+            es_one: bmoon.utl.refer,
             es_two: bmoon.utl.url,
             es_three: bmoon.utl.title
         }, pdata || {});

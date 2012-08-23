@@ -33,8 +33,5 @@ NEOERR* trace_data_add(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
     
     int type = hdf_get_int_value(node, "type", TRACE_TYPE_PAGEVIEW);
 
-    char *refer = hdf_get_value(cgi->hdf, PRE_HTTP".Referer", NULL);
-    if (refer) hdf_set_value(node, "es_one", refer);
-    
     return nerr_pass(trace_event(node, evth, ses, type));
 }
