@@ -27,6 +27,7 @@ bmoon.planinfo = {
     rendFromPic: function() {
         var o = bmoon.planinfo.init();
 
+        var domains = bmoon.dida.odomain;
         if (mgd.ori > 0) {
             if (mgd.ourl) o.e_plan_from.attr('href', mgd.ourl);
             else o.e_plan_from.attr('href', domains[mgd.ori].url);

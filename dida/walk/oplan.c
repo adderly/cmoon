@@ -2,6 +2,15 @@
 #include "lheads.h"
 #include "oplan.h"
 
+static char *plan_rand_keyword()
+{
+    int tt = hdf_get_int_value(g_hdf, "Config.Keywords.plannum", 0);
+
+    int cnt = neo_rand(tt);
+
+    return hdf_get_valuef(g_hdf, "Config.Keywords.plan.%d", cnt);
+}
+
 NEOERR* plan_of_recent(HDF *hdf, HASH *dbh, HASH *evth)
 {
     mevent_t *evt = hash_lookup(evth, "plan");
@@ -211,20 +220,20 @@ NEOERR* plan_info_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 
     hdf_copy(cgi->hdf, PRE_OUTPUT".plan", evt->hdfrcv);
 
-    hdf_set_valuef(cgi->hdf, PRE_CFG_LAYOUT".keywords=%s到%s拼车,拼车去%s",
+    hdf_set_valuef(cgi->hdf, PRE_CFG_LAYOUT".keywords=%s到%s拼车,拼车去%s,%s",
                    hdf_get_value(evt->hdfrcv, "saddr", "地球"),
                    hdf_get_value(evt->hdfrcv, "eaddr", "火星"),
-                   hdf_get_value(evt->hdfrcv, "eaddr", "火星"));
+                   hdf_get_value(evt->hdfrcv, "eaddr", "火星"),
+                   plan_rand_keyword());
     
     hdf_set_valuef(cgi->hdf, PRE_CFG_LAYOUT".title=%s至%s顺风车",
                    hdf_get_value(evt->hdfrcv, "saddr", "地球"),
                    hdf_get_value(evt->hdfrcv, "eaddr", "火星"));
 
-    hdf_set_valuef(cgi->hdf, PRE_CFG_LAYOUT".description=%s %s至%s顺风车拼车,%s",
+    hdf_set_valuef(cgi->hdf, PRE_CFG_LAYOUT".description=%s %s至%s顺风车拼车",
                    hdf_get_value(evt->hdfrcv, "sdate", "每天"),
                    hdf_get_value(evt->hdfrcv, "saddr", "地球"),
-                   hdf_get_value(evt->hdfrcv, "eaddr", "火星"),
-                   hdf_get_value(evt->hdfrcv, "attach", "顺风车拼车"));
+                   hdf_get_value(evt->hdfrcv, "eaddr", "火星"));
     
     return STATUS_OK;
 }
