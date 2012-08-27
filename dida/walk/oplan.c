@@ -4,11 +4,11 @@
 
 static char *plan_rand_keyword()
 {
-    int tt = hdf_get_int_value(g_hdf, "Config.Keywords.plannum", 0);
+    int tt = hdf_get_int_value(g_cfg, "Config.Keywords.plannum", 0);
 
     int cnt = neo_rand(tt);
 
-    return hdf_get_valuef(g_hdf, "Config.Keywords.plan.%d", cnt);
+    return hdf_get_valuef(g_cfg, "Config.Keywords.plan.%d", cnt);
 }
 
 NEOERR* plan_of_recent(HDF *hdf, HASH *dbh, HASH *evth)
