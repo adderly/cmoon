@@ -16,7 +16,7 @@ bmoon.planinfo = {
         var o = bmoon.planinfo.init();
 
         o.bindClick();
-        bmoon.utl.after(o.rendFromPic, 'mgd._done != undefined', 10);
+        //bmoon.utl.after(o.rendFromPic, 'mgd._done != undefined', 10);
     },
 
     bindClick: function() {
