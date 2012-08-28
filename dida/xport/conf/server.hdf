@@ -298,7 +298,7 @@ Plugin {
                 dad [type=int, require=true] = dad !=
                 statu [type=int, require=true] = statu =
                 rect [type=box] = ((rect - @@rect) * point(1.6,0) + @@rect) @>
-                sgeo [type=point] = ((rect[0] <-> rect[1]) / 5) > sgeo <-> 
+                sgeo [type=point] = ((rect[0] <-> rect[1]) / 5) > sgeo <->
                 km [type=float] = (km / 1.8) <
             }
         }

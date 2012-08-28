@@ -1,5 +1,6 @@
 #include "mevent_plugin.h"
 #include "mevent_member.h"
+#include "mevent_plan.h"
 #include "mevent_public.h"
 #include "mevent_fft.h"
 
@@ -77,8 +78,8 @@ static NEOERR* fft_cmd_expect_up(struct fft_entry *e, QueueEntry *q)
 /*
  * plan 入库后，遍历 expect 表，看是否这条 plan match 到了 expect 中的 plan
  * 输入参数:
- *  必传 id, dad, rect, sgeo, sdate, stime, km
- *  可选 
+ *  必传 id, dad, rect, sgeo, km
+ *  可选 [sdate, stime] or repeat
  * 返回: 1 + 2
  *  1, 匹配到的 expect， insert into meet table
  *  2, 匹配到的 expect 且其 gotime == FFT_GOTIME_IMMEDIATE 以数组形式返回，以便后续处理
@@ -88,15 +89,16 @@ static NEOERR* fft_cmd_expect_match(struct fft_entry *e, QueueEntry *q)
     STRING str; string_init(&str);
     HDF *node, *child;
     char *pdate, *ptime;
-    int ttnum = 0, retnum = 0, eid, pid, maxday;
+    int ttnum = 0, retnum = 0, eid, pid, repeat, maxday;
     time_t thatsec;
     float km;
     NEOERR *err;
     mdb_conn *db = e->db;
 
     REQ_GET_PARAM_INT(q->hdfrcv, "id", pid);
-    REQ_GET_PARAM_STR(q->hdfrcv, "sdate", pdate);
-    REQ_GET_PARAM_STR(q->hdfrcv, "stime", ptime);
+    REQ_FETCH_PARAM_STR(q->hdfrcv, "sdate", pdate);
+    REQ_FETCH_PARAM_STR(q->hdfrcv, "stime", ptime);
+    REQ_FETCH_PARAM_INT(q->hdfrcv, "repeat", repeat);
     km = mcs_get_float_value(q->hdfrcv, "km", 0.0);
     hdf_set_int_value(q->hdfrcv, "statu", FFT_EXPECT_STATU_OK);
     
@@ -112,26 +114,16 @@ static NEOERR* fft_cmd_expect_match(struct fft_entry *e, QueueEntry *q)
      * get all matched expect by position
      */
     MDB_QUERY_RAW(db, "expect", _COL_EXPECT, "%s", NULL, str.buf);
-    err = mdb_set_rows(node, db, _COL_EXPECT, "expects", "0", MDB_FLAG_Z);
-    if (nerr_handle(&err, NERR_NOT_FOUND)) return STATUS_OK;
+    err = mdb_set_rows(node, db, _COL_EXPECT, "expects", "0", MDB_FLAG_EMPTY_OK);
 	if (err != STATUS_OK) return nerr_pass(err);
 
     child = hdf_get_obj(node, "expects");
-    
-    /*
-     * sort expect by time
-     */
-    thatsec = pub_plan_get_abssec(pdate, ptime);
-    err = pub_plan_sort_by_time(child, km, thatsec, pdate);
-	if (err != STATUS_OK) return nerr_pass(err);
 
-    /*
-     * filter by relative second
-     */
-    maxday = hdf_get_int_value(g_cfg, CONFIG_PATH".meetMaxDay", 1);
-    child = hdf_get_child(node, "expects");
-    while (child) {
-        if (pub_plan_get_relsec(child, thatsec) < (maxday * ONE_DAY)) {
+    if (repeat > PLAN_RPT_NONE) {
+        /*
+         * TODO match repeated plan ignore sdate currently
+         */
+        while (child) {
             ttnum++;
             eid = hdf_get_int_value(child, "id", 0);
             MDB_EXEC(db, NULL, "INSERT INTO meet (eid, pid) VALUES (%d, %d);",
@@ -141,9 +133,37 @@ static NEOERR* fft_cmd_expect_match(struct fft_entry *e, QueueEntry *q)
                 retnum++;
                 mcs_hdf_copyf(node, child, "rexpects.%s", hdf_obj_name(child));
             }
-        }
 
-        child = hdf_obj_next(child);
+            child = hdf_obj_next(child);
+        }
+    } else {
+        /*
+         * sort expect by time
+         */
+        thatsec = pub_plan_get_abssec(pdate, ptime);
+        err = pub_plan_sort_by_time(child, km, thatsec, pdate);
+        if (err != STATUS_OK) return nerr_pass(err);
+
+        /*
+         * filter by relative second
+         */
+        maxday = hdf_get_int_value(g_cfg, CONFIG_PATH".meetMaxDay", 1);
+        child = hdf_get_child(node, "expects");
+        while (child) {
+            if (pub_plan_get_relsec(child, thatsec) < (maxday * ONE_DAY)) {
+                ttnum++;
+                eid = hdf_get_int_value(child, "id", 0);
+                MDB_EXEC(db, NULL, "INSERT INTO meet (eid, pid) VALUES (%d, %d);",
+                         NULL, eid, pid);
+                if (hdf_get_int_value(child, "gotime", FFT_GOTIME_WEEK) ==
+                    FFT_GOTIME_IMMEDIATE) {
+                    retnum++;
+                    mcs_hdf_copyf(node, child, "rexpects.%s", hdf_obj_name(child));
+                }
+            }
+
+            child = hdf_obj_next(child);
+        }
     }
 
     child = hdf_get_obj(node, "rexpects");
