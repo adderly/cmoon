@@ -36,7 +36,7 @@ static NEOERR* fft_cmd_expect_add(struct fft_entry *e, QueueEntry *q)
 
     err = mdb_build_mgcol(q->hdfrcv,
                           hdf_get_obj(g_cfg, CONFIG_PATH".MergeCol.expect"), &str);
-	if (err != STATUS_OK) return nerr_pass(err);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     MDB_EXEC(db, NULL, "SELECT merge_expect(%s)", NULL, str.buf);
 
@@ -103,19 +103,20 @@ static NEOERR* fft_cmd_expect_match(struct fft_entry *e, QueueEntry *q)
     hdf_set_int_value(q->hdfrcv, "statu", FFT_EXPECT_STATU_OK);
     
     err = hdf_init(&node);
-	if (err != STATUS_OK) return nerr_pass(err);
+    if (err != STATUS_OK) return nerr_pass(err);
     
     err = mdb_build_querycond(q->hdfrcv,
                               hdf_get_obj(g_cfg, CONFIG_PATH".QueryCond.expect"),
                               &str, NULL);
-	if (err != STATUS_OK) return nerr_pass(err);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     /*
      * get all matched expect by position
      */
     MDB_QUERY_RAW(db, "expect", _COL_EXPECT, "%s", NULL, str.buf);
-    err = mdb_set_rows(node, db, _COL_EXPECT, "expects", "0", MDB_FLAG_EMPTY_OK);
-	if (err != STATUS_OK) return nerr_pass(err);
+    err = mdb_set_rows(node, db, _COL_EXPECT, "expects", "0", MDB_FLAG_Z);
+    if (nerr_handle(&err, NERR_NOT_FOUND)) return STATUS_OK;
+    if (err != STATUS_OK) return nerr_pass(err);
 
     child = hdf_get_obj(node, "expects");
 
