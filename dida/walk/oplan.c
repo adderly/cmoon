@@ -66,7 +66,7 @@ NEOERR* plan_match_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 NEOERR* plan_leave_data_add(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
     mevent_t *evt;
-    char *mname = NULL;
+    char *mname = NULL, *email = NULL;
     HDF *plan;
     int id, expect;
     NEOERR *err;
@@ -118,8 +118,11 @@ NEOERR* plan_leave_data_add(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
             MEVENT_TRIGGER(evt, NULL, REQ_CMD_FFT_EXPECT_ADD, FLAGS_NONE);
         }
         if (expect & FFT_EXPECT_EMAIL) {
+            /* use email which user supplied on /plan/leave */
+            HDF_GET_STR(plan, "contact", email);
+            
             hdf_copy(evt->hdfsnd, NULL, plan);
-            hdf_set_value(evt->hdfsnd, "mname", mname);
+            hdf_set_value(evt->hdfsnd, "mname", email);
             hdf_set_int_value(evt->hdfsnd, "pid", id);
             
             hdf_set_int_value(evt->hdfsnd, "addrtype", FFT_EXPECT_EMAIL);

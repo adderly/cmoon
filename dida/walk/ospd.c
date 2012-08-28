@@ -164,16 +164,75 @@ NEOERR* spd_post_robot_data_mod(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
     mevent_t *evt = hash_lookup(evth, "plan");
     HDF *plan;
+    NEOERR *err;
     
     if (!cgi || !cgi->hdf || !evt) return nerr_raise(NERR_ASSERT, "paramter null");
 
     HDF_GET_OBJ(cgi->hdf, PRE_QUERY".plan", plan);
 
     hdf_copy(evt->hdfsnd, NULL, plan);
-    if (hdf_get_int_value(plan, "statu", PLAN_ST_SPD_FRESH) != PLAN_ST_SPD_RBTED)
+    if (hdf_get_int_value(plan, "statu", PLAN_ST_SPD_FRESH) != PLAN_ST_SPD_RBTED) {
         hdf_set_int_value(evt->hdfsnd, "statu", PLAN_ST_SPD_RBT_OK);
-    
-    MEVENT_TRIGGER(evt, NULL, REQ_CMD_PLAN_UP, FLAGS_NONE);
+
+        MEVENT_TRIGGER(evt, NULL, REQ_CMD_PLAN_UP, FLAGS_SYNC);
+
+        /*
+         * NOTIFY EXPECTED USER
+         * ====================
+         * copied from plan_leave_data_add()
+         */
+        mevent_t *evtf = hash_lookup(evth, "fft");
+        MCS_NOT_NULLA(evtf);
+
+        hdf_init(&plan);
+        hdf_copy(plan, NULL, evt->hdfrcv);
+        
+        hdf_copy(evtf->hdfsnd, NULL, plan);
+
+        MEVENT_TRIGGER(evtf, NULL, REQ_CMD_FFT_EXPECT_MATCH, FLAGS_SYNC);
+
+        HDF *obj = hdf_get_obj(evtf->hdfrcv, "expects");
+        if (obj) {
+            /*
+             * inbox notify
+             */
+            hdf_copy(obj, PRE_DATASET".Output.plans.0", plan);
+
+            err = inbox_multi_add(obj, evth, "PlanMatched");
+            if (err != STATUS_OK) return nerr_pass(err);
+
+            /*
+             * email notify
+             */
+            HDF *child, *tnode;
+            hdf_init(&tnode);
+            child = hdf_obj_child(obj);
+            while (child) {
+                if (hdf_get_int_value(child, "addrtype", FFT_EXPECT_NONE) ==
+                    FFT_EXPECT_EMAIL) {
+                    hdf_copy(tnode, hdf_obj_name(child), child);
+                }
+            
+                child = hdf_obj_next(child);
+            }
+
+            if (hdf_obj_child(tnode)) {
+                hdf_copy(tnode, PRE_DATASET".Output.plans.0", plan);
+
+                err = email_multi_add(tnode, evth, "PlanMatched");
+                if (err != STATUS_OK) return nerr_pass(err);
+            }
+
+            hdf_destroy(&tnode);
+
+            /*
+             * TODO sms notify
+             */
+        }
+        hdf_destroy(&plan);
+    } else {
+        MEVENT_TRIGGER(evt, NULL, REQ_CMD_PLAN_UP, FLAGS_NONE);
+    }
 
     return STATUS_OK;
 }
