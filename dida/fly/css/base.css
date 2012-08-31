@@ -90,6 +90,7 @@ table.list tr:hover {background-color: #FFFFCC;}
 }
 /* 设计 span 的 width，需结合float使用，参考 fright */
 .w100 {width: 100px;}
+.w40 {width: 40px;}
 
 .mr2 {margin-right: 2em;}
 .mr5 {margin-right: 5em;}

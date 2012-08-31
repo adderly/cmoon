@@ -26,7 +26,7 @@ system_plan [merge="dashboard.pub,system.pub"] {
             <!--[if IE]><script type="text/javascript" src="/js/b/system/ie.js"></script><![endif]-->
             <script type="text/javascript" src="/js/b/system/plan.js"></script>
 EOM
-            title = 访问量统计
+            title = 路线管理
             actionpart = 3
             subnavpart = 2
         }
@@ -45,7 +45,7 @@ system_comment [merge="dashboard.pub,system.pub"] {
             <!--[if IE]><script type="text/javascript" src="/js/b/system/ie.js"></script><![endif]-->
             <script type="text/javascript" src="/js/b/system/comment.js"></script>
 EOM
-            title = 访问量统计
+            title = 系统评论
             actionpart = 3
             subnavpart = 4
         }

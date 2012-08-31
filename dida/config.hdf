@@ -90,6 +90,7 @@ Db {
                 repeat [type=int] = repeat =
                 times = intime >
                 timee = intime <
+                km = km >
             }
         }
     }
