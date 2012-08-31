@@ -67,6 +67,7 @@ class DidaSpider(CrawlSpider):
             if len(item['attach']) <= 0:
                 print "**********" + oid + "attach error"
                 return item
+        item['attach'] = item['attach'].replace(u'联系我时，请说明是在赶集网看到的，谢谢！', u'')
 
         if len(ltmp) < 3:
             print "**********" + oid + "li[2] format error"
