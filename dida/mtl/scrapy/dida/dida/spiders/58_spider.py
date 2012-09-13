@@ -34,6 +34,18 @@ class DidaSpider(CrawlSpider):
             if (r.ntuples() > 0): print oid + "exist already!"
             else: yield Request(link.url, callback=self.parse_node)
 
+        for link in SgmlLinkExtractor(allow='.*pinche\/pn[0-9]+\/$').extract_links(response):
+            yield Request(link.url, callback=self.parse_site_child)
+
+    def parse_site_child(self, response):
+        for link in SgmlLinkExtractor(allow='.*pinche\/[0-9]+x\.shtml$').extract_links(response):
+            ori = 1
+            oid = re.compile('.*pinche\/([0-9]+)x.shtml').match(link.url).group(1)
+
+            r = self.con.query("SELECT id FROM plan WHERE ori=" +`ori`+ " AND oid='" +oid+ "'")
+            if (r.ntuples() > 0): print oid + "exist already!"
+            else: yield Request(link.url, callback=self.parse_node)
+
     def parse_node(self, response):
         self.log('this is node page %s' % response.url)
 
