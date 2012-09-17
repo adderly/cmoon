@@ -108,6 +108,8 @@ class DidaSpider(CrawlSpider):
             xnode = hxs.select('//span[@id="t_phone"]/script/text()')
             if len(xnode) < 1:
                 item['phone'] = hxs.select('//span[@id="t_phone"]/text()').extract()[0].strip().replace(u"\xa0", u" ").replace("\n", " ")
+                if item['phone'] == u'':
+                    item['phone'] = hxs.select('//span[@id="t_phone"]/img/@src').extract()[0]
             else:
                 item['phone'] = xnode.re('.*(http:[^\']+).*')[0]
         except:

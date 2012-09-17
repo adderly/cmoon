@@ -416,9 +416,9 @@ bmoon.index = {
             $('<img/>').attr('src', domains[plan.ori].img).appendTo(o.e_mc_from);
         }
         
-        o.e_mc_phone.attr('src', '/image/plan/pic?defs=segv&type=phone&id=' +
+        o.e_mc_phone.attr('src', '/image/plan/pic?defs=%20&type=phone&id=' +
                           plan.id);
-        o.e_mc_contact.attr('src', '/image/plan/pic?defs=segv&type=contact&id=' +
+        o.e_mc_contact.attr('src', '/image/plan/pic?defs=%20&type=contact&id=' +
                             plan.id);
     },
 
