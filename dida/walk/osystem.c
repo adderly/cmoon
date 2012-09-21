@@ -3,9 +3,9 @@
 #include "osystem.h"
 
 #define _COL_EMAP_PAGEVIEW "count(*), "                             \
-    " date_part('epoch', date_trunc('hour', intime))*1000 AS msec"
+    " date_part('epoch', date_trunc('hour', intime))*1000 + 8*60*60*1000 AS msec"
 #define _COL_EMAP_USERVIEW "count(DISTINCT sender), "               \
-    " date_part('epoch', date_trunc('hour', intime))*1000 AS msec"
+    " date_part('epoch', date_trunc('hour', intime))*1000 + 8*60*60*1000 AS msec"
 
 NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
@@ -61,7 +61,7 @@ NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 #define _COL_EMAP_WHO "sender, max(provid) AS provid, max(cityid) AS cityid, " \
     " count(sender), "                                                  \
     " to_char(max(intime), 'YYYY-MM-DD 00:00:00') AS day, "             \
-    " to_char(min(intime), 'YYYY-MM-DD HH:mm:SS') AS intime"
+    " to_char(min(intime), 'YYYY-MM-DD HH24:MI:SS') AS intime"
 NEOERR* system_who_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
     STRING str; string_init(&str);
@@ -97,7 +97,7 @@ NEOERR* system_who_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 #define _COL_EMAP_VIEW_DETAIL "sender, type, "              \
     " ei_one, ei_two, ei_three, es_one, es_two, es_three, " \
     " et_one, et_two, et_three, "                           \
-    " to_char(intime, 'YYYY-MM-DD HH:MM:SS') as intime"
+    " to_char(intime, 'YYYY-MM-DD HH24:MI:SS') as intime"
 NEOERR* system_view_detail_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
     STRING str; string_init(&str);
