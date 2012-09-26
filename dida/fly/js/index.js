@@ -349,8 +349,7 @@ bmoon.index = {
         o.rendMatch(plan, ncur);
 
         bmoon.dida.tracePageview({
-            es_one: 'http://imdida.org/plan/info',
-            es_two: '?id=' + plan.id,
+            es_two: 'http://imdida.org/plan/info?id=' + plan.id,
             es_three: '线路详情'
         });
     },
