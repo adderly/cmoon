@@ -59,8 +59,10 @@ bmoon.systemview = {
 
         $.plot(o.e_viewpic,
                [
-                   {label: '访问量', data:mgd.pageviews},
-                   {label: '用户量', data:mgd.userviews}
+                   {label: '访问量', data: mgd.pageviews},
+                   {label: '用户量', data: mgd.userviews},
+                   {label: '日访问', data: mgd.dateviews},
+                   {label: '日用户', data: mgd.dateusers}
                ],
                {
                    xaxis: {mode: 'time', timeformat: '%m-%d %H', timezone: 'browser'},

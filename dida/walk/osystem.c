@@ -7,6 +7,11 @@
 #define _COL_EMAP_USERVIEW "count(DISTINCT sender), "               \
     " date_part('epoch', date_trunc('hour', intime))*1000 AS msec"
 
+#define _COL_EMAP_DATEVIEW "count(*), "                             \
+    " date_part('epoch', date_trunc('day', intime))*1000 AS msec"
+#define _COL_EMAP_DATEUSER "count(DISTINCT sender), "               \
+    " date_part('epoch', date_trunc('day', intime))*1000 AS msec"
+
 NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {
     mdb_conn *db = hash_lookup(dbh, "trace");
@@ -49,6 +54,22 @@ NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
     err = mdb_set_rows(cgi->hdf, db, _COL_EMAP_USERVIEW, PRE_OUTPUT".userviews",
                        NULL, MDB_FLAG_EMPTY_OK);
 	if (err != STATUS_OK) return nerr_pass(err);
+
+    /*
+     * day count
+     */
+    MDB_QUERY_RAW(db, "emap", _COL_EMAP_DATEVIEW,
+                  " %s GROUP BY date_trunc('day', intime) "
+                  " ORDER BY date_trunc('day', intime)", NULL, str.buf);
+    err = mdb_set_rows(cgi->hdf, db, _COL_EMAP_DATEVIEW, PRE_OUTPUT".dateviews",
+                       NULL, MDB_FLAG_EMPTY_OK);
+    if (err != STATUS_OK) return nerr_pass(err);
+    MDB_QUERY_RAW(db, "emap", _COL_EMAP_DATEUSER,
+                  " %s GROUP BY date_trunc('day', intime) "
+                  " ORDER BY date_trunc('day', intime)", NULL, str.buf);
+    err = mdb_set_rows(cgi->hdf, db, _COL_EMAP_DATEUSER, PRE_OUTPUT".dateusers",
+                       NULL, MDB_FLAG_EMPTY_OK);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     string_clear(&str);
 

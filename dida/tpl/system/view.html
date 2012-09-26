@@ -44,6 +44,16 @@
   <?cs each: v=Output.userviews ?>
   mgd.userviews.push([<?cs var:v.msec ?>, <?cs var:v.count ?>]);
   <?cs /each ?>
-  
+
+  mgd.dateviews = [];
+  <?cs each: v=Output.dateviews ?>
+  mgd.dateviews.push([<?cs var:v.msec ?>, <?cs var:v.count ?>]);
+  <?cs /each ?>
+
+  mgd.dateusers = [];
+  <?cs each: v=Output.dateusers ?>
+  mgd.dateusers.push([<?cs var:v.msec ?>, <?cs var:v.count ?>]);
+  <?cs /each ?>
+
   mgd._done = 1;
 </script>
