@@ -3,9 +3,9 @@
 #include "osystem.h"
 
 #define _COL_EMAP_PAGEVIEW "count(*), "                             \
-    " date_part('epoch', date_trunc('hour', intime))*1000 + 8*60*60*1000 AS msec"
+    " date_part('epoch', date_trunc('hour', intime))*1000 AS msec"
 #define _COL_EMAP_USERVIEW "count(DISTINCT sender), "               \
-    " date_part('epoch', date_trunc('hour', intime))*1000 + 8*60*60*1000 AS msec"
+    " date_part('epoch', date_trunc('hour', intime))*1000 AS msec"
 
 NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
 {

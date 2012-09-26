@@ -80,7 +80,7 @@ b/inbox/system.js: pub/jquery.mnnav.js inbox/system.js
 b/system/ie.js: pub/flot/excanvas.min.js
 b/system/view.js: pub/jquerytools/src/dateinput/dateinput.js \
                   pub/jquery.mntable.js pub/jquery.tablesorter.js \
-                  pub/flot/jquery.flot.js system/view.js
+                  pub/flot/jquery.flot.js pub/flot/jquery.flot.time.js system/view.js
 b/system/comment.js: pub/jquerytools/src/dateinput/dateinput.js \
                   system/comment.js
 b/system/plan.js: pub/jquerytools/src/dateinput/dateinput.js \

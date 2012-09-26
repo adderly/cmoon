@@ -63,7 +63,7 @@ bmoon.systemview = {
                    {label: '用户量', data:mgd.userviews}
                ],
                {
-                   xaxis: {mode: 'time', timeformat: '%m-%d %H'},
+                   xaxis: {mode: 'time', timeformat: '%m-%d %H', timezone: 'browser'},
                    series: {
                        lines: {show: true},
                        points: {show:true}
