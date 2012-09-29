@@ -43,7 +43,7 @@ NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
                   " ORDER BY date_trunc('hour', intime)", NULL, str.buf);
     err = mdb_set_rows(cgi->hdf, db, _COL_EMAP_PAGEVIEW, PRE_OUTPUT".pageviews",
                        NULL, MDB_FLAG_EMPTY_OK);
-	if (err != STATUS_OK) return nerr_pass(err);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     /*
      * userview
@@ -53,7 +53,7 @@ NEOERR* system_view_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
                   " ORDER BY date_trunc('hour', intime)", NULL, str.buf);
     err = mdb_set_rows(cgi->hdf, db, _COL_EMAP_USERVIEW, PRE_OUTPUT".userviews",
                        NULL, MDB_FLAG_EMPTY_OK);
-	if (err != STATUS_OK) return nerr_pass(err);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     /*
      * day count
