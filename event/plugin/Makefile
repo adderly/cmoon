@@ -7,15 +7,17 @@ PREFIX=/usr/local
 CFLAGS += -shared -fPIC -rdynamic
 
 CFLAGS += -I$(BASEDIR)event/daemon/ $(INC_MOON)
+LIBS = -levent $(LIB_MOON)
 
 SOURCES = $(wildcard *.c)
+SOURCES_DM = ../daemon/log.c ../daemon/common.c ../daemon/reply.c ../daemon/syscmd.c
 LIB_PLUGIN = $(patsubst %.c, %.so, $(SOURCES))
 
 all: $(LIB_PLUGIN)
 
 mevent_%.so: mevent_%.c
 	@echo "$(CC) -o $@"
-	@$(CC) $(CFLAGS) -o $@ $<
+	@$(CC) $(CFLAGS) -o $@ $< $(SOURCES_DM) $(LIBS)
 
 install:
 	install -d $(PREFIX)/lib

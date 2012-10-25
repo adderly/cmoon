@@ -1,5 +1,6 @@
 tmp/
 .svn/
+*.dSYM/
 .depend
 cscope.files
 cscope.out

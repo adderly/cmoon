@@ -9,7 +9,7 @@ static void ltpl_donotcall()
     zero_data_get(NULL, NULL, NULL, NULL);
 }
 
-int ltpl_config(const struct dirent *ent)
+int ltpl_config(struct dirent *ent)
 {
     if (reg_search(".*.hdf", ent->d_name))
         return 1;

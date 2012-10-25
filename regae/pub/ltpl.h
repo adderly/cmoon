@@ -7,7 +7,7 @@ __BEGIN_DECLS
 void ltpl_prepare_rend(HDF *hdf, char *tpl);
 
 void ltpl_destroy(HASH *tplh);
-int ltpl_config(const struct dirent *ent);
+int ltpl_config(struct dirent *ent);
 NEOERR* ltpl_init(HASH **tplh, char *path);
 NEOERR* ltpl_parse_file(HASH *dbh, HASH *evth,
                         void *lib, char *dir, char *name, HASH *outhash);
