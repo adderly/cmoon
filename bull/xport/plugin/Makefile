@@ -1,5 +1,8 @@
-BASEDIR = ../../
+LOCALBASE = ../../
+include $(LOCALBASE)Make.env
 include $(BASEDIR)Make.env
+
+UNAME := $(shell uname)
 
 # prefix for installing the binaries
 PREFIX=/usr/local
@@ -7,17 +10,21 @@ PREFIX=/usr/local
 CFLAGS += -shared -fPIC -rdynamic
 
 CFLAGS += -I$(BASEDIR)event/daemon/ $(INC_MOON)
-LIBS = -levent $(LIB_MOON)
 
 SOURCES = $(wildcard *.c)
-SOURCES_DM = ../daemon/log.c ../daemon/common.c ../daemon/reply.c ../daemon/syscmd.c
 LIB_PLUGIN = $(patsubst %.c, %.so, $(SOURCES))
 
 all: $(LIB_PLUGIN)
 
 mevent_%.so: mevent_%.c
 	@echo "$(CC) -o $@"
-	@$(CC) $(CFLAGS) -o $@ $< $(SOURCES_DM) $(LIBS)
+ifeq ($(UNAME), Darwin)
+	@$(CC) $(CFLAGS) -c $<
+	@$(CC) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.c, %.o, $<) -o $@
+else
+	@$(CC) $(CFLAGS) -o $@ $<
+endif
+
 
 install:
 	install -d $(PREFIX)/lib

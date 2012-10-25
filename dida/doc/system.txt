@@ -126,7 +126,7 @@ Debian                                          RedHat
                                                 yum install postgresql84-server.i386
                                                 service postgresql initdb
                                                 /etc/init.d/postgresql start
-
+/Library/PostgreSQL/9.2/bin/pg_ctl start -D/Library/PostgreSQL/9.2/data
 
 1
 -

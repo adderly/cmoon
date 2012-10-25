@@ -18,7 +18,7 @@ CREATE TABLE emap (
     et_two   text NOT NULL DEFAULT '',
     et_three text NOT NULL DEFAULT '',
 
-    intime timestamp DEFAULT now,
+    intime timestamp DEFAULT now(),
     PRIMARY KEY (id)
 );
 CREATE INDEX emap_index ON emap (type, cityid, browser);
