@@ -153,7 +153,7 @@ NEOERR* spd_post_robot_data_get(CGI *cgi, HASH *dbh, HASH *evth, session_t *ses)
              "p.statu=%d AND c.id=p.cityid LIMIT 100", NULL, PLAN_ST_SPD_FRESH);
     err = mdb_set_rows(cgi->hdf, db, _COL_PLAN_C, PRE_OUTPUT".plans",
                        NULL, MDB_FLAG_EMPTY_OK);
-	if (err != STATUS_OK) return nerr_pass(err);
+    if (err != STATUS_OK) return nerr_pass(err);
 
     hdf_set_attr(cgi->hdf, PRE_OUTPUT".plans", "type", "array");
 
