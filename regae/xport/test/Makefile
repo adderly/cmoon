@@ -2,7 +2,7 @@ LOCALBASE = ../../
 include $(LOCALBASE)Make.env
 include $(BASEDIR)Make.env
 
-INCS	= -I../daemon $(INC_MOON)
+INCS	= -I../daemon -I../plugin $(INC_MOON)
 LIBS	= -levent $(LIB_MOON)
 
 SOURCES = $(wildcard *.c)
