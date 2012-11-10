@@ -8,9 +8,9 @@ void ltpl_prepare_rend(HDF *hdf, char *tpl);
 
 void ltpl_destroy(HASH *tplh);
 #ifdef __MACH__
-int ltpl_config(struct dirent *ent)
+int ltpl_config(struct dirent *ent);
 #else
-int ltpl_config(const struct dirent *ent)
+int ltpl_config(const struct dirent *ent);
 #endif
 NEOERR* ltpl_init(HASH **tplh, char *path);
 NEOERR* ltpl_parse_file(HASH *dbh, HASH *evth,
