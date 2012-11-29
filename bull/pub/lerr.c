@@ -83,17 +83,13 @@ void lerr_opfinish_json(NEOERR *err, HDF *hdf)
     
     hdf_remove_tree(hdf, PRE_SUCCESS);
     
-    char buf[1024], errname[128];
     NEOERR *neede = mcs_err_valid(err);
-    if (!neede) neede = err;
-    snprintf(buf, sizeof(buf), "%s:%d %s",
-             neede->file, neede->lineno,
-             _lookup_errname(neede, errname, sizeof(errname)));
     /* set PRE_ERRXXX with the most recently err */
-    if (!hdf_get_obj(hdf, PRE_ERRMSG)) {
-        hdf_set_value(hdf, PRE_ERRMSG, buf);
-    }
     hdf_set_int_value(hdf, PRE_ERRCODE, neede->error);
+    if (!hdf_get_obj(hdf, PRE_ERRMSG)) {
+        hdf_set_valuef(hdf, "%s=%s:%d %s",
+                       PRE_ERRMSG, neede->file, neede->lineno, neede->desc);
+    }
 
     STRING str; string_init(&str);
     nerr_error_traceback(err, &str);
