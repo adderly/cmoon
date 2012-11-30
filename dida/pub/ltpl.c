@@ -180,6 +180,7 @@ NEOERR* ltpl_parse_file(HASH *dbh, HASH *evth,
                 char tm[LEN_TM];
                 mutil_getdatetime(tm, sizeof(tm), val, 0);
                 outfile = mstr_repstr(1, outfile, "$ftime$", tm);
+                /* TODO memory leak */
             }
             snprintf(fname, sizeof(fname), PATH_DOC"%s", outfile);
 
