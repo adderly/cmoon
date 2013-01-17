@@ -31,7 +31,7 @@ NEOERR* session_init(CGI *cgi, HASH *dbh, session_t **ses)
                      PRE_QUERY, neos_strip((char*)list->items[t_rsv_i]));
             onode = hdf_get_obj(cgi->hdf, tok);
             if (onode) {
-                mjson_export_to_hdf(onode, NULL, false);
+                mjson_export_to_hdf(onode, NULL, MJSON_EXPORT_NONE, false);
             }
         }
         uListDestroy(&list, ULIST_FREE);
@@ -57,7 +57,7 @@ NEOERR* session_init(CGI *cgi, HASH *dbh, session_t **ses)
     if (s) {
         neos_unescape((UINT8*)s, strlen(s), '%');
         hdf_set_value(lses->province, NULL, s);
-        mjson_export_to_hdf(lses->province, NULL, false);
+        mjson_export_to_hdf(lses->province, NULL, MJSON_EXPORT_NONE, false);
     }
 
     /*
@@ -68,7 +68,7 @@ NEOERR* session_init(CGI *cgi, HASH *dbh, session_t **ses)
     if (s) {
         neos_unescape((UINT8*)s, strlen(s), '%');
         hdf_set_value(lses->city, NULL, s);
-        mjson_export_to_hdf(lses->city, NULL, false);
+        mjson_export_to_hdf(lses->city, NULL, MJSON_EXPORT_NONE, false);
     }
 
     /*
