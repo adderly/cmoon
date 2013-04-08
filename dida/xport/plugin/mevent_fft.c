@@ -132,7 +132,7 @@ static NEOERR* fft_cmd_expect_match(struct fft_entry *e, QueueEntry *q)
             if (hdf_get_int_value(child, "gotime", FFT_GOTIME_WEEK) ==
                 FFT_GOTIME_IMMEDIATE) {
                 retnum++;
-                mcs_hdf_copyf(node, child, "rexpects.%s", hdf_obj_name(child));
+                mcs_copyf(node, child, "rexpects.%s", hdf_obj_name(child));
             }
 
             child = hdf_obj_next(child);
@@ -159,7 +159,7 @@ static NEOERR* fft_cmd_expect_match(struct fft_entry *e, QueueEntry *q)
                 if (hdf_get_int_value(child, "gotime", FFT_GOTIME_WEEK) ==
                     FFT_GOTIME_IMMEDIATE) {
                     retnum++;
-                    mcs_hdf_copyf(node, child, "rexpects.%s", hdf_obj_name(child));
+                    mcs_copyf(node, child, "rexpects.%s", hdf_obj_name(child));
                 }
             }
 
