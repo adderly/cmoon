@@ -11,7 +11,7 @@ static void member_after_login(CGI *cgi, HASH *evth,
 
     memset(mmsn, 0x0, sizeof(mmsn));
     mstr_rand_string(mmsn, sizeof(mmsn));
-    mutil_getdatetime_gmt(tm, sizeof(tm), "%A, %d-%b-%Y %T GMT", ONE_WEEK);
+    mutil_getdatetime_gmt(tm, sizeof(tm), "%A, %d-%b-%Y %T GMT", time(NULL) + ONE_WEEK);
 
     /*
      * set cookie 
