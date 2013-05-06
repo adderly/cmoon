@@ -140,7 +140,7 @@ NEOERR* parse_message(struct req_info *req, const unsigned char *buf, size_t len
     if (len < 17) {
         //stats.net_broken_req++;
         //req->reply_mini(req, REP_ERR_BROKEN);
-        return nerr_raise(NERR_ASSERT, "packet broken %d", len);
+        return nerr_raise(NERR_ASSERT, "packet broken %ld", len);
     }
 
     MSG_DUMP("recv: ",  buf, len);

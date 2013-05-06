@@ -2,6 +2,7 @@
 #include "net.h"
 
 #include "main.h"
+#include "mheads.h"
 
 HDF *g_cfg = NULL;
 
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    err = mconfig_parse_file(myset.conffname, &g_cfg);
+    err = mcfg_parse_file(myset.conffname, &g_cfg);
     DIE_NOK_MTL(err);
     
     mtc_init(hdf_get_value(g_cfg, "V.logfile", "/tmp/mevent"));
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 
     net_go();
 
-    mconfig_cleanup(&g_cfg);
+    mcfg_cleanup(&g_cfg);
 
     return 0;
 }

@@ -2,6 +2,7 @@ BASEDIR = ../
 include $(BASEDIR)Make.env
 
 CFLAGS += -rdynamic
+LIB_MOON += -levent
 
 SOURCE1 = apev.c
 SOURCES = apev.c main.c mevent_ape_ext.c net.c parse.c udps.c
@@ -20,7 +21,7 @@ include $(DEPEND)
 %.o:%.c
 	@if [ "$<" = "$(SOURCE1)" ]; then \
 		echo "=== "$(CFLAGS); \
-		echo "=== "$(INC_MOON) $(LIB_MOON); fi
+		echo "=== "$(INC_MOON); fi
 	@echo "$(CC) -c $<"
 	@$(CC) $(CFLAGS) -c $< -o $@ $(INC_MOON)
 
