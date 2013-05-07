@@ -1,0 +1,9 @@
+Config {
+    logfile = /var/log/moon/moc
+    trace_level = 7
+}
+
+Server {
+    ip = 127.0.0.1
+    port = 50000
+}
