@@ -1,22 +1,163 @@
-#include "apev.h"
+#include "mheads.h"
+#include "lheads.h"
 
-/*
- * mostly, we have ONLY_ONE backend for apev/x, so, we use a list instead of hash
- * one single compare can be 3 ~ 4 faster than hash_lookup
- */
-/*static HASH *etbl = NULL;*/
-struct event_entry *etbl = NULL;
-
-static NEOERR* parse_event(struct req_info *req)
+static void parse_stats(struct queue_entry *q)
 {
-    unsigned char *ename;
+    hdf_set_int_value(q->hdfsnd, "msg_tipc", g_stat.msg_tipc);
+    hdf_set_int_value(q->hdfsnd, "msg_tcp", g_stat.msg_tcp);
+    hdf_set_int_value(q->hdfsnd, "msg_udp", g_stat.msg_udp);
+    hdf_set_int_value(q->hdfsnd, "msg_sctp", g_stat.msg_sctp);
+    hdf_set_int_value(q->hdfsnd, "net_version_mismatch", g_stat.net_version_mismatch);
+    hdf_set_int_value(q->hdfsnd, "net_broken_req", g_stat.net_broken_req);
+    hdf_set_int_value(q->hdfsnd, "net_unk_req", g_stat.net_unk_req);
+    hdf_set_int_value(q->hdfsnd, "pro_busy", g_stat.pro_busy);
+
+    reply_trigger(q, REP_OK);
+
+    return;
+}
+
+
+/* Create a queue entry structure based on the parameters passed. Memory
+ * allocated here will be free()'d in queue_entry_free(). It's not the
+ * cleanest way, but the alternatives are even messier. */
+static struct queue_entry *make_queue_long_entry(const struct req_info *req,
+                                                 const unsigned char *ename,
+                                                 size_t esize,
+                                                 HDF *hdfrcv)
+{
+    struct queue_entry *e;
+    unsigned char *ecopy;
+
+    e = queue_entry_create();
+    if (e == NULL) {
+        return NULL;
+    }
+
+    ecopy = NULL;
+    if (ename != NULL) {
+        ecopy = malloc(esize);
+        if (ecopy == NULL) {
+            queue_entry_free(e);
+            return NULL;
+        }
+        memcpy(ecopy, ename, esize);
+    }
+
+    e->operation = (uint32_t)req->cmd;
+    e->ename = ecopy;
+    e->esize = esize;
+    e->hdfrcv = hdfrcv;
+
+    /* Create a copy of req, including clisa */
+    e->req = malloc(sizeof(struct req_info));
+    if (e->req == NULL) {
+        queue_entry_free(e);
+        return NULL;
+    }
+    memcpy(e->req, req, sizeof(struct req_info));
+
+    e->req->clisa = malloc(req->clilen);
+    if (e->req->clisa == NULL) {
+        queue_entry_free(e);
+        return NULL;
+    }
+    memcpy(e->req->clisa, req->clisa, req->clilen);
+
+    /* clear out unused fields */
+    e->req->payload = NULL;
+    e->req->psize = 0;
+
+    return e;
+}
+
+
+/* Creates a new queue entry and puts it into the queue. Returns 1 if success,
+ * 0 if memory error. */
+static int put_in_queue_long(const struct req_info *req, int sync,
+                             const unsigned char *ename, size_t esize,
+                             HDF *hdfrcv)
+{
+    struct queue_entry *e;
+
+    struct event_entry *entry = find_entry_in_table(g_moc, ename, esize);
+    if (entry == NULL) {
+        if (!strncmp((char*)ename, "Reserve.Status", esize)) {
+            /* TODO e freed? */
+            e = make_queue_long_entry(req, ename, esize, hdfrcv);
+            if (e == NULL) {
+                return 0;
+            }
+            parse_stats(e);
+            return 1;
+        }
+        hdf_destroy(&hdfrcv);
+        g_stat.net_unk_req++;
+        if (sync) req->reply_mini(req, REP_ERR_UNKREQ);
+        return 1;
+    }
+    
+    if (entry->op_queue->size > QUEUE_SIZE_WARNING &&
+        entry->op_queue->size % 100 == 0) {
+        mtc_err("plugin %s size exceed %ld",
+                entry->name, entry->op_queue->size);
+    }
+    if (entry->op_queue->size > MAX_QUEUE_ENTRY &&
+        entry->op_queue->size % 100 == 0) {
+        mtc_foo("plugin %s busy, queue size is %ld",
+                entry->name, entry->op_queue->size);
+        hdf_destroy(&hdfrcv);
+        g_stat.pro_busy++;
+        if (sync) req->reply_mini(req, REP_ERR_BUSY);
+        return 1;
+    }
+    
+    e = make_queue_long_entry(req, ename, esize, hdfrcv);
+    if (e == NULL) {
+        return 0;
+    }
+
+    queue_lock(entry->op_queue);
+    if (sync) queue_cas(entry->op_queue, e);
+    else queue_put(entry->op_queue, e);
+    queue_unlock(entry->op_queue);
+
+    if (sync) {
+        /* Signal the app thread it has work only if it's a
+         * synchronous operation, asynchronous don't mind
+         * waiting. It does have a measurable impact on
+         * performance (2083847usec vs 2804973usec for sets on
+         * "test2d 100000 10 10"). */
+        queue_signal(entry->op_queue);
+    }
+
+    return 1;
+}
+
+/* Like put_in_queue_long() but with few parameters because most actions do
+ * not need newval. */
+static int put_in_queue(const struct req_info *req, int sync,
+                        const unsigned char *ename, size_t esize,
+                        HDF *hdfrcv)
+{
+    return put_in_queue_long(req, sync, ename, esize, hdfrcv);
+}
+
+
+#define FILL_SYNC_FLAG()                        \
+    do {                                        \
+        sync = req->flags & FLAGS_SYNC;            \
+    } while(0)
+
+static void parse_event(struct req_info *req)
+{
+    int rv, sync;
+    const unsigned char *ename;
     uint32_t esize, rsize;
     unsigned char *pos;
     HDF *hdfrcv = NULL;
-    NEOERR *err, *neede;
-    int retcode;
 
-    if (!etbl) return nerr_raise(NERR_ASSERT, "v backend hasn't init");
+    FILL_SYNC_FLAG();
     
     /*
      * Request format:
@@ -35,94 +176,23 @@ static NEOERR* parse_event(struct req_info *req)
 
     pos = pos + sizeof(uint32_t);
     ename = pos;
-    *(pos+esize) = '\0';
 
     pos = pos + esize;
     rsize = unpack_hdf(pos, req->psize-esize-sizeof(uint32_t), &hdfrcv);
     if (rsize == 0 || rsize+esize+sizeof(uint32_t) > MAX_PACKET_LEN ||
         req->psize < esize) {
-        //stats.net_broken_req++;
-        return nerr_raise(NERR_PARSE, "unpack_hdf faied with %d", rsize);
-    }
-    
-    struct event_entry *e = etbl;
-    while (e) {
-        if (!strcmp(e->name, (char*)ename)) {
-            struct queue_entry q;
-
-            memset(&q, sizeof(q), 0x0);
-
-            q.operation = (uint32_t)req->cmd;
-            q.ename = ename;
-            q.esize = esize;
-            q.hdfrcv = hdfrcv;
-            hdf_init(&(q.hdfsnd));
-            q.req = req;
-        
-            err = e->process_driver(e, &q);
-
-            /*
-             * set errorxxx to q.hdfsnd
-             */
-            neede = err;
-            while (neede && neede != INTERNAL_ERR) {
-                if (neede->error != NERR_PASS) break;
-                neede = neede->next;
-            }
-            retcode = neede ? neede->error: REP_OK;
-            if (PROCESS_NOK(retcode)) {
-                STRING s; string_init(&s);
-                nerr_error_traceback(err, &s);
-                hdf_set_value(q.hdfsnd, "errtrace", s.buf);
-                string_clear(&s);
-                hdf_set_int_value(q.hdfsnd, "errcode", neede->error);
-            }
-
-            /*
-             * send q.hdfsnd to client if present
-             */
-            if (hdf_obj_child(q.hdfsnd) != NULL) {
-                unsigned char *buf = calloc(1, MAX_PACKET_LEN);
-                if (!buf) goto done;
-
-                size_t vsize;
-                vsize = pack_hdf(q.hdfsnd, buf, MAX_PACKET_LEN);
-                if (vsize == 0) goto done;
- 
-                q.req->reply_long(q.req, retcode, buf, vsize);
-
-                free(buf);
-            }
-        
-        done:
-            hdf_destroy(&(q.hdfrcv));
-            hdf_destroy(&(q.hdfsnd));
-
-            /*
-             * return error to caller for trace
-             */
-            return nerr_pass(err);
-        }
-
-        e = e->next;
+        g_stat.net_broken_req++;
+        if (sync) req->reply_mini(req, REP_ERR_BROKEN);
+        return;
     }
 
-    return nerr_raise(NERR_NOT_FOUND, "%s backend not found", ename);
-}
+    rv = put_in_queue(req, sync, ename, esize, hdfrcv);
+    if (!rv) {
+        if (sync) req->reply_mini(req, REP_ERR_MEM);
+        return;
+    }
 
-NEOERR* parse_regist_v(struct event_entry *e)
-{
-    NEOERR *err;
-    
-    if (!e || !e->name) return nerr_raise(NERR_ASSERT, "input error");
-
-    err = e->start_driver();
-    if (err != STATUS_OK) return nerr_pass(err);
-    
-    e->next = etbl;
-    etbl = e;
-
-    return STATUS_OK;
+    return;
 }
 
 
@@ -130,7 +200,8 @@ NEOERR* parse_regist_v(struct event_entry *e)
  * directly over the network (ie. TIPC) or might have wrapped it around (ie.
  * TCP). Here we only deal with the clean, stripped, non protocol-specific
  * message. */
-NEOERR* parse_message(struct req_info *req, const unsigned char *buf, size_t len)
+int parse_message(struct req_info *req,
+                  const unsigned char *buf, size_t len)
 {
     uint32_t hdr, ver, id;
     uint16_t cmd, flags;
@@ -138,9 +209,9 @@ NEOERR* parse_message(struct req_info *req, const unsigned char *buf, size_t len
     size_t psize;
 
     if (len < 17) {
-        //stats.net_broken_req++;
-        //req->reply_mini(req, REP_ERR_BROKEN);
-        return nerr_raise(NERR_ASSERT, "packet broken %ld", len);
+        g_stat.net_broken_req++;
+        req->reply_mini(req, REP_ERR_BROKEN);
+        return 0;
     }
 
     MSG_DUMP("recv: ",  buf, len);
@@ -164,9 +235,9 @@ NEOERR* parse_message(struct req_info *req, const unsigned char *buf, size_t len
     flags = ntohs(* ((uint16_t *) buf + 3));
 
     if (ver != PROTO_VER) {
-        //stats.net_version_mismatch++;
-        //req->reply_mini(req, REP_ERR_VER);
-        return nerr_raise(NERR_ASSERT, "version mismatch %d", ver);
+        g_stat.net_version_mismatch++;
+        req->reply_mini(req, REP_ERR_VER);
+        return 0;
     }
 
     /* We define payload as the stuff after buf. But be careful because
@@ -184,5 +255,7 @@ NEOERR* parse_message(struct req_info *req, const unsigned char *buf, size_t len
     req->payload = payload;
     req->psize = psize;
 
-    return nerr_pass(parse_event(req));
+    parse_event(req);
+
+    return 1;
 }

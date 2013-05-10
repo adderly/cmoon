@@ -1,7 +1,25 @@
-#include "main.h"
 #include "mheads.h"
+#include "lheads.h"
 
 HDF *g_cfg = NULL;
+HASH *g_datah = NULL;
+
+volatile time_t g_ctime = 0;
+
+struct stats g_stat = {0};
+struct moc *g_moc = NULL;
+
+static void useage(void)
+{
+    char h[] = \
+        "moc [options]\n"
+        "\n"
+        " -c fname    config file\n"
+        " -f          foreground\n"
+        "\n";
+    printf("%s", h);
+    exit(1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +33,8 @@ int main(int argc, char *argv[])
         .foreground = 0,
     };
 
+    if (argc < 2) useage();
+
     int c;
     while ((c = getopt(argc, argv, "c:f")) != -1) {
         switch(c) {
@@ -24,16 +44,18 @@ int main(int argc, char *argv[])
         case 'f':
             myset.foreground = 1;
             break;
+        default:
+            useage();
         }
     }
 
+    sys_stats_init(&g_stat);
+
     err = mcfg_parse_file(myset.conffname, &g_cfg);
-    DIE_NOK_MTL(err);
+    OUTPUT_NOK(err);
     
     mtc_init(hdf_get_value(g_cfg, PRE_CONFIG".logfile", "/tmp/moc"));
     err = nerr_init();
-    RETURN_V_NOK(err, 1);
-    err = merr_init((MeventLog)mtc_msg);
     RETURN_V_NOK(err, 1);
 
     if (!myset.foreground) {
@@ -49,11 +71,11 @@ int main(int argc, char *argv[])
 
     mtc_foo("starting moc");
 
-    moc = moc_start();
+    g_moc = moc_start();
 
     net_go();
 
-    moc_stop(moc);
+    moc_stop(g_moc);
 
     mcfg_cleanup(&g_cfg);
 

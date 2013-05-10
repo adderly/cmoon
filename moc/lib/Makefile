@@ -4,22 +4,19 @@ MEVENT = 0
 BASEDIR = ../../
 include $(BASEDIR)Make.env
 
-CFLAGS += -rdynamic
-INC_MOON += -I../lib
-LIB_MOON += -levent -L../lib -lmoc
-
-SOURCE1 = main.c
-SOURCES = main.c mocd.c net.c parse.c queue.c syscmd.c tcp.c
+SOURCE1 = cache.c
+SOURCES = cache.c lerr.c packet.c
 OBJS = $(patsubst %.c, %.o, $(SOURCES))
 DEPEND = .depend
 
-all: moc
+all: libmoc.a
 
 $(DEPEND): $(SOURCES)
 	@$(CC) $(CFLAGS) -MM $^ $(INC_MOON) > $@
 
-moc: $(OBJS) $(DEPEND)
-	$(CC) $(CFLAGS) $(OBJS) -o moc $(LIB_MOON)
+libmoc.a: $(OBJS) $(DEPEND)
+	@rm -rf $@
+	$(AR) rcs $@ $(OBJS)
 
 include $(DEPEND)
 %.o:%.c
@@ -31,13 +28,14 @@ include $(DEPEND)
 
 install:
 
+cflag:
+	@echo "=== "$(CFLAGS)
+	@echo "=== "$(INC_MOON)
+	@echo "=== "$(LIB_MOON)
+
 clean:
-	rm -f $(OBJS) moc
+	rm -f $(OBJS) *.a
 
 backup:
 	@$(MAKE) clean
-	@$(TAR) zcvf moc.tar.gz *
-
-#LIB_ME = $(LIB_MOON:-lmevent=)
-#INC_XX = $(INC_MOON:-I../../lib/mevent=)
-#INC_ME = $(INC_XX:-I../../event/plugin=)
+	@$(TAR) zcvf libmoc.tar.gz *

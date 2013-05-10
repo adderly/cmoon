@@ -1,91 +1,76 @@
-#include "apev.h"
-#include "net.h"
-
-#include "main.h"
-
-volatile time_t g_time;
-
-static void ext_check_zomble()
-{
-    char *key  = NULL;
-    
-    SnakeEntry *s = (SnakeEntry*)hash_next(stbl, (void**)&key);
-
-    while (s) {
-        if (g_time - s->idle > ZOMBLE_SEC) {
-            if (s->state == RUNNING) {
-                s->state = DIED;
-                 mtc_err("%s died", s->name);
-                //alarm();
-                //notice_other();
-            }
-        } else {
-            if (s->state == DIED) {
-                s->state = RUNNING;
-                 mtc_foo("%s alived", s->name);
-                //notice_other();
-            }
-        }
-
-        s = hash_next(stbl, (void**)&key);
-    }
-
-    ext_snake_sort();
-}
+#include "mheads.h"
+#include "lheads.h"
 
 static void time_up(int fd, short flags, void* arg)
 {
     struct event *ev = (struct event*)arg;
-    struct event_base *base = ev->ev_base;
-    struct timeval t = {.tv_sec = TIMEUP_SEC, .tv_usec = 0};
+    struct timeval t = {.tv_sec = 1, .tv_usec = 0};
     static bool initialized = false;
     static int intime = 0;
+    intime++;
 
     if (initialized) event_del(ev);
     else initialized = true;
-    
-    event_set(ev, -1, 0, time_up, ev);
-    event_base_set(base, ev);
-    event_add(ev, &t);
 
-    g_time = time(NULL);
+    evtimer_set(ev, time_up, ev);
+    evtimer_add(ev, &t);
 
-    if (++intime > (ZOMBLE_SEC / TIMEUP_SEC) ) {
-        intime = 0;
-        ext_check_zomble();
+    g_ctime = time(NULL);
+
+    struct event_chain *c;
+    struct event_entry *e;
+    for (size_t i = 0; i < g_moc->hashlen; i++) {
+        c = g_moc->table + i;
+
+        e = c->first;
+        while (e) {
+            struct timer_entry *t = e->timers;
+            while (t && t->timeout > 0) {
+                if (intime % t->timeout == 0) {
+                    t->timer(e, intime);
+                    if (!t->repeat) t->timeout = 0;
+                }
+                t = t->next;
+            }
+            e = e->next;
+        }
     }
-}
-
-static void net_read(int fd, short event, void *arg)
-{
-    NEOERR *err = udps_recv(fd, 0, NULL);
-    TRACE_NOK(err);
 }
 
 void net_go()
 {
-    struct event_base *base;
     struct event ev, ev_clock;
-    struct timeval t = {.tv_sec = TIMEUP_SEC, .tv_usec = 0};
     int fd = -1;
+    char *ip;
+    int port;
 
-    fd = udps_init(hdf_get_value(g_cfg, "V.ip", "127.0.0.1"),
-                   hdf_get_int_value(g_cfg, "V.port", 50000));
+    ip = hdf_get_value(g_cfg, PRE_SERVER".ip", "127.0.0.1");
+    port = hdf_get_int_value(g_cfg, PRE_SERVER".port", 5000);
+
+    /*
+     * we use DEPRECATED event_init() here because:
+     * event_init() more simple than event_base_xxx(),
+     * and I can make sure the server's event just used by the main thread only
+     */
+    event_init();
+
+    fd = tcp_init(ip, port);
+    if (fd <= 0) {
+        mtc_err("init tcp socket on %s %d failure %d", ip, port, fd);
+        return;
+    }
     
-    base = event_base_new();
-
-    event_set(&ev, fd, EV_READ | EV_PERSIST, net_read, &ev);
-    event_base_set(base, &ev);
+    event_set(&ev, fd, EV_READ | EV_PERSIST, tcp_newconnection, &ev);
     event_add(&ev, NULL);
 
-    event_set(&ev_clock, -1, 0, time_up, &ev_clock);
-    event_base_set(base, &ev_clock);
-    event_add(&ev_clock, &t);
+    struct timeval t = {.tv_sec = 1, .tv_usec = 0};
+    evtimer_set(&ev_clock, time_up, &ev_clock);
+    evtimer_add(&ev_clock, &t);
 
-    event_base_loop(base, 0);
+    event_dispatch();
 
     event_del(&ev);
     event_del(&ev_clock);
     
-    udps_close(fd);
+    tcp_close(fd);
 }
