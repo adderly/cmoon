@@ -8,7 +8,8 @@ int main(int argc, char *argv[])
 {
     NEOERR *err;
 
-    mtc_init(TC_ROOT"sitemap");
+    mtc_init(TC_ROOT"sitemap",
+             hdf_get_int_value(g_cfg, PRE_CONFIG".trace_level", TC_DEFAULT_LEVEL));
 
     err = mcfg_parse_file(SITE_CONFIG, &g_cfg);
     DIE_NOK_MTL(err);

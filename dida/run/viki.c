@@ -23,7 +23,8 @@ int main(int argc, char **argv, char **envp)
     
     //sleep(20);
     mutil_makesure_coredump();
-    mtc_init(TC_ROOT"viki");
+    mtc_init(TC_ROOT"viki",
+             hdf_get_int_value(g_cfg, PRE_CONFIG".trace_level", TC_DEFAULT_LEVEL));
 
     err = lerr_init();
     DIE_NOK_CGI(err);
