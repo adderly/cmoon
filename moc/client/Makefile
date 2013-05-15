@@ -4,22 +4,22 @@ MEVENT = 0
 BASEDIR = ../../
 include $(BASEDIR)Make.env
 
-CFLAGS += -rdynamic
 INC_MOON += -I../lib
 LIB_MOON += -levent -L../lib -lmocpub
 
-SOURCE1 = main.c
-SOURCES = main.c mocd.c net.c parse.c queue.c syscmd.c tcp.c
+SOURCE1 = internal.c
+SOURCES = internal.c moc.c mtrace.c tcp.c
 OBJS = $(patsubst %.c, %.o, $(SOURCES))
 DEPEND = .depend
 
-all: moc
+all: libmoc.a
 
 $(DEPEND): $(SOURCES)
 	@$(CC) $(CFLAGS) -MM $^ $(INC_MOON) > $@
 
-moc: $(OBJS) $(DEPEND)
-	$(CC) $(CFLAGS) $(OBJS) -o moc $(LIB_MOON)
+libmoc.a: $(OBJS) $(DEPEND)
+	@rm -rf $@
+	$(AR) rcs $@ $(OBJS)
 
 include $(DEPEND)
 %.o:%.c
@@ -32,11 +32,11 @@ include $(DEPEND)
 install:
 
 clean:
-	rm -f $(OBJS) moc
+	rm -f $(OBJS) *.a
 
 backup:
 	@$(MAKE) clean
-	@$(TAR) zcvf mocserver.tar.gz *
+	@$(TAR) zcvf mocclient.tar.gz *
 
 #LIB_ME = $(LIB_MOON:-lmevent=)
 #INC_XX = $(INC_MOON:-I../../lib/mevent=)

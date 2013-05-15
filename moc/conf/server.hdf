@@ -1,5 +1,5 @@
 Config {
-    logfile = /var/log/moon/moc
+    logfile = /var/log/moon/moc/server
     trace_level = 7
 }
 

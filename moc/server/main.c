@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
     err = mcfg_parse_file(myset.conffname, &g_cfg);
     OUTPUT_NOK(err);
     
-    mtc_init(hdf_get_value(g_cfg, PRE_CONFIG".logfile", "/tmp/moc"));
+    mtc_init(hdf_get_value(g_cfg, PRE_CONFIG".logfile", "/tmp/mocserver"),
+             hdf_get_int_value(g_cfg, PRE_CONFIG".trace_level", TC_DEFAULT_LEVEL));
     err = nerr_init();
     RETURN_V_NOK(err, 1);
 
