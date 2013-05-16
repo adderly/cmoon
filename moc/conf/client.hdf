@@ -4,17 +4,21 @@ Config {
 }
 
 modules {
+    skeleton {
+        0 {
+            ip = 127.0.0.1
+            port = 5000
+#            non_block = 1
+            timeout_s = 0
+            timeout_u = 8000000
+        }
+    }
     base {
         0 {
             ip = 127.0.0.1
             port = 5000
             timeout_s = 0
-            timeout_u = 800000
-        }
-        1 {
-            ip = 127.0.0.1
-            port = 5001
-            non_block = 1
+            timeout_u = 8000000
         }
     }
 }

@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     
     mtc_init(hdf_get_value(g_cfg, PRE_CONFIG".logfile", "/tmp/mocserver"),
              hdf_get_int_value(g_cfg, PRE_CONFIG".trace_level", TC_DEFAULT_LEVEL));
-    err = nerr_init();
+    err = lerr_init();
     RETURN_V_NOK(err, 1);
 
     if (!myset.foreground) {

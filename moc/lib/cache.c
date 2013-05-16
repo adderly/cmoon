@@ -3,8 +3,6 @@
  * and using a natural, per-chain LRU to do cleanups.
  * Cleanups are performed in place, when cache_set() gets called.
  */
-
-#include "mheads.h"
 #include "moc-private.h"
 
 struct cache *cache_create(size_t numobjs, unsigned int flags)

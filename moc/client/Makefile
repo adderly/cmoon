@@ -5,10 +5,9 @@ BASEDIR = ../../
 include $(BASEDIR)Make.env
 
 INC_MOON += -I../lib
-LIB_MOON += -levent -L../lib -lmocpub
 
-SOURCE1 = internal.c
-SOURCES = internal.c moc.c mtrace.c tcp.c
+SOURCE1 = cache.c
+SOURCES = cache.c lerr.c packet.c mtrace.c    internal.c moc.c tcp.c
 OBJS = $(patsubst %.c, %.o, $(SOURCES))
 DEPEND = .depend
 

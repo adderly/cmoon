@@ -1,5 +1,6 @@
 #include "moc.h"
 
+unsigned int g_reqid = 0;
 static HASH *m_evth = NULL;
 
 NEOERR* moc_init()
@@ -72,6 +73,34 @@ NEOERR* moc_init()
 
     hdf_destroy(&cfg);
     return STATUS_OK;
+}
+
+void moc_destroy()
+{
+    char *key = NULL;
+
+    if (!m_evth) return;
+    
+    moc_t *evt = (moc_t*)hash_next(m_evth, (void**)&key);
+
+    while (evt != NULL) {
+        /* TODO moc_free */
+        //moc_free(evt);
+        evt = hash_next(m_evth, (void**)&key);
+    }
+
+    hash_destroy(&m_evth);
+    m_evth = NULL;
+}
+
+HDF* moc_hdfsnd(char *module)
+{
+    if (!m_evth || !module) return NULL;
+
+    moc_t *evt = hash_lookup(m_evth, module);
+    if (!evt) return NULL;
+
+    return evt->hdfsnd;
 }
 
 NEOERR* moc_set_param(char *module, char *key, char *val)
@@ -159,7 +188,10 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
     if (!m_evth || !module) return REP_ERR;
 
     evt = hash_lookup(m_evth, module);
-    if (!evt) return REP_ERR;
+    if (!evt) {
+        mtc_err("can't found %s module", module);
+        return REP_ERR;
+    }
 
     evt->cmd = cmd;
     evt->flags = flags;
@@ -219,4 +251,14 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
     }
 
     return rv;
+}
+
+HDF* moc_hdfrcv(char *module)
+{
+    if (!m_evth || !module) return NULL;
+
+    moc_t *evt = hash_lookup(m_evth, module);
+    if (!evt) return NULL;
+
+    return evt->hdfrcv;
 }

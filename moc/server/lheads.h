@@ -7,7 +7,6 @@
 #include "moc-private.h"
 
 #include "lglobal.h"
-#include "lcfg.h"
 
 #include "queue.h"
 #include "parse.h"

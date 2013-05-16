@@ -1,7 +1,7 @@
 BASEDIR = ../
 include $(BASEDIR)Make.env
 
-SUBDIR = lib server plugin
+SUBDIR = lib server plugin client demo conf
 
 all: $(subdir)
 	@$(MULTIMAKE) $(SUBDIR)

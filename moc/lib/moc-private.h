@@ -1,6 +1,15 @@
 #ifndef __MOC_PRIVATE_H__
 #define __MOC_PRIVATE_H__
 
+#include <stdlib.h>        /* malloc() */
+#include <unistd.h>        /* close() */
+#include <stdint.h>        /* uint32_t and friends */
+#include <stdbool.h>       /* bool, true, false */
+#include <string.h>        /* memcpy() */
+#include <arpa/inet.h>      /* htonls() and friends */
+
+#include "ClearSilver.h"
+
 #include "lerr.h"
 #include "packet.h"
 #include "cache.h"
@@ -20,6 +29,15 @@ extern volatile time_t g_ctime;
 #define FLAGS_NONE       0
 #define FLAGS_CACHE_ONLY 1    /* get, set, del, cas, incr */
 #define FLAGS_SYNC       2    /* set, del */
+
+enum {
+    REQ_CMD_NONE = 0,
+    REQ_CMD_CACHE_GET = 100,
+    REQ_CMD_CACHE_SET,
+    REQ_CMD_CACHE_DEL,
+    REQ_CMD_CACHE_EMPTY,
+    REQ_CMD_STATS = 1000        /* MAX system command is 1000 */
+};
 
 /* ok start point */
 enum {REP_OK = 1000};

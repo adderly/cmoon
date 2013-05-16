@@ -3,7 +3,7 @@
  * client should runable on Linux, Mac, Android, ios...
  * so, make it as clean as possible
  * current depend on:
- *     ClearSilver libutl
+ *     ClearSilver neo_utl
  */
 
 #ifndef __MOC_H__
@@ -32,6 +32,8 @@
 
 __BEGIN_DECLS
 
+#define MOC_CONFIG_FILE        "/etc/moc/client.hdf"
+
 /*
  * 初始化
  * 该函数会从配置文件中读取所所有服务器列表, 初始化
@@ -39,7 +41,19 @@ __BEGIN_DECLS
 NEOERR* moc_init();
 
 /*
- * 设置请求参数
+ * 销毁
+ */
+void moc_destroy();
+
+/*
+ * 设置请求参数（法一）
+ * 返回请求参数数据HDF
+ * 可用来设置请求参数
+ */
+HDF* moc_hdfsnd(char *module);
+
+/*
+ * 设置请求参数（法二）
  * module: 业务模块名
  */
 NEOERR* moc_set_param(char *module, char *key, char *val);
@@ -60,6 +74,11 @@ NEOERR* moc_set_param_float(char *module, char *key, float val);
  * 如果服务业务端有其他数据返回时, 返回数据存储在 evt->rcvdata 中
  */
 int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flags);
+
+/*
+ * 返回收到的数据HDF
+ */
+HDF* moc_hdfrcv(char *module);
 
 /*
  * 绑定回调函数

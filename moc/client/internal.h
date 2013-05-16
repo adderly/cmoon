@@ -7,7 +7,6 @@ __BEGIN_DECLS
  * macros
  * ========
  */
-#define MOC_CONFIG_FILE        "/etc/mevent/client.hdf"
 #define TCP_MSG_OFFSET 4
 #define ID_CODE 1
 
