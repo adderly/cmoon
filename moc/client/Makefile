@@ -1,13 +1,20 @@
 #don't use libmevent
 MEVENT = 0
+EVENTLOOP = 1
 
 BASEDIR = ../../
 include $(BASEDIR)Make.env
 
+CFLAGS = -std=c99 -D_GNU_SOURCE
 INC_MOON += -I../lib
 
 SOURCE1 = cache.c
 SOURCES = cache.c lerr.c packet.c mtrace.c    internal.c moc.c tcp.c
+ifeq ($(EVENTLOOP), 1)
+CFLAGS += -DEVENTLOOP
+SOURCES += eloop.c
+endif
+
 OBJS = $(patsubst %.c, %.o, $(SOURCES))
 DEPEND = .depend
 

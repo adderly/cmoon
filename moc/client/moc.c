@@ -71,6 +71,11 @@ NEOERR* moc_init()
         node = hdf_obj_next(node);
     }
 
+#ifdef EVENTLOOP
+    err = eloop_start(m_evth);
+    if (err != STATUS_OK) return nerr_pass(err);
+#endif
+
     hdf_destroy(&cfg);
     return STATUS_OK;
 }
@@ -88,6 +93,10 @@ void moc_destroy()
         //moc_free(evt);
         evt = hash_next(m_evth, (void**)&key);
     }
+
+#ifdef EVENTLOOP
+    eloop_stop(m_evth);
+#endif
 
     hash_destroy(&m_evth);
     m_evth = NULL;
@@ -261,4 +270,13 @@ HDF* moc_hdfrcv(char *module)
     if (!evt) return NULL;
 
     return evt->hdfrcv;
+}
+
+NEOERR* moc_regist_callback(char *module, unsigned short cmd, MocCallback cmdcbk)
+{
+#ifdef EVENTLOOP
+#else
+    mtc_foo("can't regist callback without EVENTLOOP");
+#endif
+    return STATUS_OK;
 }

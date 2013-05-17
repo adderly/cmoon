@@ -177,7 +177,7 @@ struct moc* moc_start(void)
         //lib = dlopen(tbuf, RTLD_NOW|RTLD_GLOBAL);
         lib = dlopen(tbuf, RTLD_LAZY|RTLD_GLOBAL);
         if (lib == NULL) {
-            mtc_err("open driver %s failure %s\n", tbuf, dlerror());
+            mtc_err("open driver %s failure %s", tbuf, dlerror());
             res = hdf_obj_next(res);
             continue;
         }
@@ -185,14 +185,17 @@ struct moc* moc_start(void)
         snprintf(tbuf, sizeof(tbuf), "%s_driver", hdf_obj_value(res));
         driver = (struct event_driver*)dlsym(lib, tbuf);
         if ((tp = dlerror()) != NULL) {
-            mtc_err("find symbol %s failure %s\n", tbuf, tp);
+            mtc_err("find symbol %s failure %s", tbuf, tp);
             res = hdf_obj_next(res);
             continue;
         }
 
         ret = moc_start_driver(evt, driver, lib);
-        if (ret != 1) mtc_err("init driver %s failure\n", hdf_obj_value(res));
-        else evt->numevts++;
+        if (ret != 1) mtc_err("init driver %s failure", hdf_obj_value(res));
+        else {
+            mtc_dbg("init driver %s ok", hdf_obj_value(res));
+            evt->numevts++;
+        }
         
         res = hdf_obj_next(res);
     }

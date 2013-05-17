@@ -30,6 +30,12 @@
 #include "tcp.h"
 #include "moc-private.h"     /* mos's public lib */
 
+#ifdef EVENTLOOP
+#include <pthread.h>        /* for pthread_t */
+#include <sys/select.h>     /* select() */
+#include "eloop.h"
+#endif
+
 __BEGIN_DECLS
 
 #define MOC_CONFIG_FILE        "/etc/moc/client.hdf"
@@ -46,14 +52,14 @@ NEOERR* moc_init();
 void moc_destroy();
 
 /*
- * 设置请求参数（法一）
+ * 设置请求参数（方法一）
  * 返回请求参数数据HDF
  * 可用来设置请求参数
  */
 HDF* moc_hdfsnd(char *module);
 
 /*
- * 设置请求参数（法二）
+ * 设置请求参数（方法二）
  * module: 业务模块名
  */
 NEOERR* moc_set_param(char *module, char *key, char *val);

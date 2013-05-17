@@ -8,11 +8,14 @@ Server {
     port = 5000
     plugins {
         0 = skeleton
+        1 = base
     }
 }
 
 Plugin {
     skeleton {
         dbsn = pgsql:dbname=merry host=localhost user=dida password=loveu
+    }
+    base {
     }
 }
