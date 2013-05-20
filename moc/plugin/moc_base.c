@@ -1,70 +1,26 @@
 #include "moc_plugin.h"
 #include "moc_base.h"
-
-#define PLUGIN_NAME    "base"
-#define CONFIG_PATH    PRE_SERVER"."PLUGIN_NAME
-
-struct base_stats {
-    unsigned long msg_total;
-    unsigned long msg_unrec;
-    unsigned long msg_badparam;
-    unsigned long msg_stats;
-
-    unsigned long proc_suc;
-    unsigned long proc_fai;
-};
-
-struct base_entry {
-    EventEntry base;
-    mdb_conn *db;
-    Cache *cd;
-    struct base_stats st;
-};
-
-struct base_user {
-    char *nick;
-    int fd;
-};
-
-struct _base {
-    int ntt;
-    HASH *userh;
-};
-
-static struct _base *m_base = NULL;
-
-static NEOERR* base_init()
-{
-    if (!m_base) {
-        m_base = calloc(1, sizeof(struct _base));
-        if (!m_base) return nerr_raise(NERR_NOMEM, "alloc base failure");
-        m_base->ntt = 0;
-        err = hash_init(&m_base->userh, hash_str_hash, hash_str_comp);
-        if (err != STATUS_OK) return nerr_pass(err);
-    }
-
-    return STATUS_OK;
-}
+#include "base_pri.h"
 
 static NEOERR* cmd_join(struct base_entry *e, QueueEntry *q)
 {
-    char *nick;
+    char *uid;
 
-    REQ_GET_PARAM_STR(q->hdfrcv, "userid", nick);
+    REQ_GET_PARAM_STR(q->hdfrcv, "userid", uid);
 
-    mtc_dbg("%s on", nick);
-    
+    base_user_quit(uid);
+    base_user_new(uid, q);
+
     return STATUS_OK;
 }
 
-static NEOERR* cmd_say(struct base_entry *e, QueueEntry *q)
+static NEOERR* cmd_quit(struct base_entry *e, QueueEntry *q)
 {
-    char *nick, *msg;
+    char *uid;
 
-    REQ_GET_PARAM_STR(q->hdfrcv, "userid", nick);
-    REQ_GET_PARAM_STR(q->hdfrcv, "msg", msg);
+    REQ_GET_PARAM_STR(q->hdfrcv, "userid", uid);
 
-    mtc_dbg("%s say %s", nick, msg);
+    base_user_quit(uid);
     
     return STATUS_OK;
 }
@@ -85,8 +41,8 @@ static void base_process_driver(EventEntry *entry, QueueEntry *q)
     case REQ_CMD_BASE_JOIN:
         err = cmd_join(e, q);
         break;
-    case REQ_CMD_BASE_SAY:
-        err = cmd_say(e, q);
+    case REQ_CMD_BASE_QUIT:
+        err = cmd_quit(e, q);
         break;
     case REQ_CMD_STATS:
         st->msg_stats++;
@@ -149,7 +105,7 @@ static EventEntry* base_init_driver(void)
     //err = mdb_init(&e->db, s);
     //JUMP_NOK(err, error);
 
-    err = base_init();
+    err = base_info_init();
     JUMP_NOK(err, error);
     
     e->cd = cache_create(hdf_get_int_value(g_cfg, CONFIG_PATH".numobjs", 1024), 0);

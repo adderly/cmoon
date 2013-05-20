@@ -26,6 +26,8 @@ typedef struct _moc_srv {
     int fd;
     struct sockaddr_in srvsa;
     socklen_t srvlen;
+    int nblock;
+    struct timeval tv;
 } moc_srv;
 
 typedef struct moc_t {
@@ -63,6 +65,7 @@ int compare_servers(const void *s1, const void *s2);
 moc_srv *select_srv(moc_t *evt, const char *key, size_t ksize);
 ssize_t srecv(int fd, unsigned char *buf, size_t count, int flags);
 ssize_t ssend(int fd, const unsigned char *buf, size_t count, int flags);
+void close_srv(moc_t *evt, int order, int fd);
 
 __END_DECLS
 #endif  /* __INTERNAL_H__ */

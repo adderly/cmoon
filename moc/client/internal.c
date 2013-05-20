@@ -112,3 +112,19 @@ moc_srv *select_srv(moc_t *evt, const char *key, size_t ksize)
     n = checksum((const unsigned char*)key, ksize) % evt->nservers;
     return &(evt->servers[n]);
 }
+
+void close_srv(moc_t *evt, int order, int fd)
+{
+    if (!evt) return;
+    
+    mtc_dbg("%s %d %d closed", evt->ename, order, fd);
+
+    if (evt->nservers < order) return;
+
+    moc_srv *srv = &(evt->servers[order]);
+
+    if (srv->fd != fd) return;
+
+    close(srv->fd);
+    srv->fd = -1;
+}

@@ -17,6 +17,7 @@
 #include <time.h>
 #include <netdb.h>         /* gethostbyname() */
 #include <fcntl.h>
+#include <errno.h>
 
 #include <sys/types.h>     /* socket defines */
 #include <sys/socket.h>

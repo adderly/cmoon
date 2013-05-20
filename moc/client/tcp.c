@@ -34,6 +34,9 @@ static int add_tcp_server_addr(moc_t *evt, in_addr_t *inetaddr, int port,
     newsrv->srvsa.sin_family = AF_INET;
     newsrv->srvsa.sin_port = htons(port);
     newsrv->srvsa.sin_addr.s_addr = *inetaddr;
+    newsrv->nblock = nblock;
+    newsrv->tv.tv_sec = tv->tv_sec;
+    newsrv->tv.tv_usec = tv->tv_usec;
 
     rv = connect(fd, (struct sockaddr *) &(newsrv->srvsa), sizeof(newsrv->srvsa));
     if (rv < 0) goto error_exit;
@@ -63,6 +66,44 @@ error_exit:
 
     evt->servers = newarray;
     evt->nservers -= 1;
+
+    return 0;
+}
+
+static int tcp_server_reconnect(moc_srv *srv)
+{
+    int rv, fd;
+    moc_srv *newsrv, *newarray;
+
+    fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd < 0) return 0;
+
+    if (srv->nblock) {
+        int x = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, x | O_NONBLOCK);
+    } else {
+        if (srv->tv.tv_sec != 0 || srv->tv.tv_usec != 0) {
+            setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&(srv->tv), sizeof(srv->tv));
+            setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char*)&(srv->tv), sizeof(srv->tv));
+        }
+    }
+    
+    rv = connect(fd, (struct sockaddr *) &(srv->srvsa), sizeof(srv->srvsa));
+    if (rv < 0) goto error_exit;
+
+    /*
+     * Disable Nagle algorithm because we often send small packets.
+     * Huge gain in performance.
+     */
+    rv = 1;
+    if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &rv, sizeof(rv)) < 0 ) goto error_exit;
+
+    srv->fd = fd;
+
+    return 1;
+
+error_exit:
+    close(fd);
 
     return 0;
 }
@@ -132,6 +173,21 @@ int tcp_srv_send(moc_srv *srv, unsigned char *buf, size_t bsize)
     len = htonl(bsize);
     memcpy(buf, (const void *) &len, 4);
 
+    if (srv->fd <= 0) {
+        mtc_dbg("%d closed, reconnect", srv->fd);
+        /*
+         * TODO
+         * although we reconnect to the server agin,
+         * but we haven't do application's JOIN command to do further communicate
+         * so, application need do JOIN on reconnect
+         * need a system_callback here
+         */
+        if (!tcp_server_reconnect(srv)) {
+            mtc_dbg("reconnect failure");
+            return 0;
+        }
+    }
+    
     rv = ssend(srv->fd, buf, bsize, 0);
     if (rv != bsize) return 0;
     return 1;

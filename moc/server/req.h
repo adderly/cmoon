@@ -107,6 +107,7 @@ struct req_info {
     uint16_t flags;
     const unsigned char *payload;
     size_t psize;
+    struct tcp_socket *tcpsock;
 
     /* operations */
     /* reply_err is depracated */

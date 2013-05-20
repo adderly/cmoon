@@ -5,7 +5,7 @@
 
 enum {
     REQ_CMD_BASE_JOIN = 1001,
-    REQ_CMD_BASE_SAY
+    REQ_CMD_BASE_QUIT
 };
 
 #endif    /* __MOC_BASE_H__ */

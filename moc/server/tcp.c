@@ -1,21 +1,6 @@
 #include "mheads.h"
 #include "lheads.h"
 
-/* TCP socket structure. Used mainly to hold buffers from incomplete
- * recv()s. */
-struct tcp_socket {
-    int fd;
-    struct sockaddr_in clisa;
-    socklen_t clilen;
-    struct event *evt;
-
-    unsigned char *buf;
-    size_t pktsize;
-    size_t len;
-    struct req_info req;
-    size_t excess;
-};
-
 static void tcp_recv(int fd, short event, void *arg);
 static void process_buf(struct tcp_socket *tcpsock,
         unsigned char *buf, size_t len);
@@ -36,6 +21,14 @@ static void tcp_socket_free(struct tcp_socket *tcpsock)
         free(tcpsock->evt);
     if (tcpsock->buf)
         free(tcpsock->buf);
+    if (tcpsock->on_close) {
+        tcpsock->on_close(tcpsock->appdata);
+        /*
+         * avoid core dump
+         */
+        tcpsock->on_close = NULL;
+        tcpsock->appdata = NULL;
+    }
     free(tcpsock);
 }
 
@@ -45,6 +38,7 @@ static void init_req(struct tcp_socket *tcpsock)
     tcpsock->req.type = REQTYPE_TCP;
     tcpsock->req.clisa = (struct sockaddr *) &tcpsock->clisa;
     tcpsock->req.clilen = tcpsock->clilen;
+    tcpsock->req.tcpsock = tcpsock;
     tcpsock->req.reply_mini = tcp_reply_mini;
     tcpsock->req.reply_err = tcp_reply_err;
     tcpsock->req.reply_long = tcp_reply_long;
@@ -278,6 +272,8 @@ void tcp_newconnection(int fd, short event, void *arg)
     tcpsock->pktsize = 0;
     tcpsock->len = 0;
     tcpsock->excess = 0;
+    tcpsock->appdata = NULL;
+    tcpsock->on_close = NULL;
 
     event_set(new_event, newfd, EV_READ | EV_PERSIST, tcp_recv,
             (void *) tcpsock);
@@ -316,7 +312,6 @@ static void tcp_recv(int fd, short event, void *arg)
 
         init_req(tcpsock);
         process_buf(tcpsock, static_buf, rv);
-
     } else {
         /* We already got a partial message, complete it. */
         size_t maxtoread = tcpsock->pktsize - tcpsock->len;

@@ -7,7 +7,7 @@ UNAME := $(shell uname)
 PREFIX=/usr/local
 
 CFLAGS += -shared -fPIC
-INC_MOON += -I../server -I../lib
+INC_MOON += -I../server -I../lib -Iprivate
 LIB_MOON += -levent -L../lib -lmoc
 
 SOURCES = $(wildcard *.c)
@@ -15,13 +15,13 @@ LIB_PLUGIN = $(patsubst %.c, %.so, $(SOURCES))
 
 all: $(LIB_PLUGIN)
 
-moc_%.so: moc_%.c
+moc_%.so: private/%_internal.c private/%_timer.c moc_%.c
 	@echo "$(CC) -o $@"
 ifeq ($(UNAME), Darwin)
-	@$(CC) $(CFLAGS) -c $< $(INC_MOON)
+	@$(CC) $(CFLAGS) -c $^ $(INC_MOON)
 	@$(CC) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.c, %.o, $<) -o $@
 else
-	@$(CC) $(CFLAGS) -o $@ $< $(INC_MOON)
+	@$(CC) $(CFLAGS) -o $@ $^ $(INC_MOON)
 endif
 
 install:

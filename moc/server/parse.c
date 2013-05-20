@@ -67,6 +67,7 @@ static struct queue_entry *make_queue_long_entry(const struct req_info *req,
     /* clear out unused fields */
     e->req->payload = NULL;
     e->req->psize = 0;
+    e->req->tcpsock = req->tcpsock;
 
     return e;
 }
