@@ -7,15 +7,15 @@ Server {
     ip = 127.0.0.1
     port = 5000
     plugins {
-        0 = skeleton
-        1 = base
+        0 = base
+        1 = chat
     }
 }
 
 Plugin {
-    skeleton {
+    base {
         dbsn = pgsql:dbname=merry host=localhost user=dida password=loveu
     }
-    base {
+    chat {
     }
 }

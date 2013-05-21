@@ -1,10 +1,10 @@
-#ifndef __SKELETON_PRI_H__
-#define __SKELETON_PRI_H__
+#ifndef __CHAT_PRI_H__
+#define __CHAT_PRI_H__
 
-#define PLUGIN_NAME    "skeleton"
+#define PLUGIN_NAME    "chat"
 #define CONFIG_PATH    PRE_SERVER"."PLUGIN_NAME
 
-struct skeleton_stats {
+struct chat_stats {
     unsigned long msg_total;
     unsigned long msg_unrec;
     unsigned long msg_badparam;
@@ -14,11 +14,11 @@ struct skeleton_stats {
     unsigned long proc_fai;
 };
 
-struct skeleton_entry {
+struct chat_entry {
     EventEntry base;
     mdb_conn *db;
     Cache *cd;
-    struct skeleton_stats st;
+    struct chat_stats st;
 };
 
-#endif  /* __SKELETON_PRI_H__ */
+#endif  /* __CHAT_PRI_H__ */

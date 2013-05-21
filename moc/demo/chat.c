@@ -39,8 +39,8 @@ int main()
     OUTPUT_NOK(err);
 
     rand_string_with_len(nick, 7);
-    moc_set_param("base", "userid", nick);
-    ret = moc_trigger("base", NULL, 1001, FLAGS_SYNC);
+    moc_set_param("chat", "userid", nick);
+    ret = moc_trigger("chat", NULL, 1001, FLAGS_SYNC);
     if (PROCESS_NOK(ret)) {
         printf("regist nick %s error %d\n", nick, ret);
         moc_destroy();
@@ -55,12 +55,11 @@ int main()
         
         if (!strcmp(msg, "bye")) break;
 
-        moc_set_param("base", "userid", nick);
-        moc_set_param("base", "msg", msg);
+        moc_set_param("chat", "msg", msg);
         
-        ret = moc_trigger("base", NULL, 1002, FLAGS_NONE);
+        ret = moc_trigger("chat", NULL, 1011, FLAGS_NONE);
         if (PROCESS_OK(ret)) {
-            hdf_dump(moc_hdfrcv("skeleton"), NULL);
+            hdf_dump(moc_hdfrcv("chat"), NULL);
         } else {
             printf("error %d\n", ret);
         }

@@ -1,39 +1,38 @@
 #include "moc_plugin.h"
+#include "moc_chat.h"
+#include "chat_pri.h"
 #include "moc_base.h"
-#include "base_pri.h"
 
-static struct base_info *m_base = NULL;
+static BaseInfo *m_base = NULL;
 
-NEOERR* base_cmd_join(struct base_info *binfo, QueueEntry *q)
+static NEOERR* cmd_bcst(struct chat_entry *e, QueueEntry *q)
+{
+    char *uid, *msg;
+
+    BASE_GET_UID(q, uid);
+    REQ_GET_PARAM_STR(q->hdfrcv, "msg", msg);
+
+    mtc_dbg("%s broadcast: %s", uid, msg);
+
+    return STATUS_OK;
+}
+
+static NEOERR* cmd_pm(struct chat_entry *e, QueueEntry *q)
 {
     char *uid;
 
     REQ_GET_PARAM_STR(q->hdfrcv, "userid", uid);
 
-    base_user_quit(binfo, uid);
-    base_user_new(binfo, uid, q);
-
     return STATUS_OK;
 }
 
-NEOERR* base_cmd_quit(struct base_info *binfo, QueueEntry *q)
+static void chat_process_driver(EventEntry *entry, QueueEntry *q)
 {
-    char *uid;
-
-    REQ_GET_PARAM_STR(q->hdfrcv, "userid", uid);
-
-    base_user_quit(binfo, uid);
-    
-    return STATUS_OK;
-}
-
-static void base_process_driver(EventEntry *entry, QueueEntry *q)
-{
-    struct base_entry *e = (struct base_entry*)entry;
+    struct chat_entry *e = (struct chat_entry*)entry;
     NEOERR *err = NULL;
     int ret;
     
-    struct base_stats *st = &(e->st);
+    struct chat_stats *st = &(e->st);
 
     st->msg_total++;
     
@@ -41,6 +40,12 @@ static void base_process_driver(EventEntry *entry, QueueEntry *q)
     switch (q->operation) {
         CASE_SYS_CMD(q->operation, q, e->cd, err);
         CASE_BASE_CMD(m_base, q);
+    case REQ_CMD_CHAT_BCST:
+        err = cmd_bcst(e, q);
+        break;
+    case REQ_CMD_CHAT_PM:
+        err = cmd_pm(e, q);
+        break;
     case REQ_CMD_STATS:
         st->msg_stats++;
         err = STATUS_OK;
@@ -73,30 +78,29 @@ static void base_process_driver(EventEntry *entry, QueueEntry *q)
     }
 }
 
-static void base_stop_driver(EventEntry *entry)
+static void chat_stop_driver(EventEntry *entry)
 {
-    struct base_entry *e = (struct base_entry*)entry;
+    struct chat_entry *e = (struct chat_entry*)entry;
 
     /*
      * e->base.name, e->base will free by moc_stop_driver() 
      */
     mdb_destroy(e->db);
     cache_free(e->cd);
-    /* TODO base_info_destroy() */
 }
 
 
 
-static EventEntry* base_init_driver(void)
+static EventEntry* chat_init_driver(void)
 {
-    struct base_entry *e = calloc(1, sizeof(struct base_entry));
+    struct chat_entry *e = calloc(1, sizeof(struct chat_entry));
     if (e == NULL) return NULL;
     NEOERR *err;
 
     e->base.name = (unsigned char*)strdup(PLUGIN_NAME);
     e->base.ksize = strlen(PLUGIN_NAME);
-    e->base.process_driver = base_process_driver;
-    e->base.stop_driver = base_stop_driver;
+    e->base.process_driver = chat_process_driver;
+    e->base.stop_driver = chat_stop_driver;
     //moc_add_timer(&e->base.timers, 60, true, hint_timer_up_term);
 
     //char *s = hdf_get_value(g_cfg, CONFIG_PATH".dbsn", NULL);
@@ -122,7 +126,7 @@ error:
     return NULL;
 }
 
-struct event_driver base_driver = {
+struct event_driver chat_driver = {
     .name = (unsigned char*)PLUGIN_NAME,
-    .init_driver = base_init_driver,
+    .init_driver = chat_init_driver,
 };
