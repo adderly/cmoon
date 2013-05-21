@@ -2,11 +2,8 @@
 MEVENT = 0
 EVENTLOOP = 1
 
-BASEDIR = ../../
-include $(BASEDIR)Make.env
-
-CFLAGS = -std=c99 -D_GNU_SOURCE
-INC_MOON += -I../lib
+CFLAGS = -g -Wall -std=c99 -D_XOPEN_SOURCE=600 -fno-strict-aliasing -D_GNU_SOURCE -D_DARWIN_C_SOURCE
+INC_MOON = -I/usr/local/include/ClearSilver -I../lib
 
 SOURCE1 = cache.c
 SOURCES = cache.c lerr.c packet.c mtrace.c    internal.c moc.c tcp.c

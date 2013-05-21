@@ -4,6 +4,8 @@ LIBS = -L../client -lmoc -lneo_utl -lpthread
 SOURCES = $(wildcard *.c)
 BINARY = $(patsubst %.c, %, $(SOURCES))
 
+CFLAGS = -g -Wall -std=c99 -D_XOPEN_SOURCE=600 -fno-strict-aliasing -D_GNU_SOURCE -D_DARWIN_C_SOURCE
+
 all: $(BINARY)
 
 %:%.c

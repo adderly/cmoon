@@ -15,7 +15,7 @@ static void tcp_reply_long(const struct req_info *req, uint32_t reply,
  * Miscelaneous helper functions
  */
 
-static void tcp_socket_free(struct tcp_socket *tcpsock)
+void tcp_socket_free(struct tcp_socket *tcpsock)
 {
     if (tcpsock->evt)
         free(tcpsock->evt);

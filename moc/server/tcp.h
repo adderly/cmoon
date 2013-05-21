@@ -22,6 +22,7 @@ struct tcp_socket {
 int tcp_init(const char* ip, int port);
 void tcp_close(int fd);
 void tcp_newconnection(int fd, short event, void *arg);
+void tcp_socket_free(struct tcp_socket *tcpsock);
 
 #endif
 

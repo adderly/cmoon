@@ -73,7 +73,6 @@ error_exit:
 static int tcp_server_reconnect(moc_srv *srv)
 {
     int rv, fd;
-    moc_srv *newsrv, *newarray;
 
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) return 0;
@@ -174,7 +173,7 @@ int tcp_srv_send(moc_srv *srv, unsigned char *buf, size_t bsize)
     memcpy(buf, (const void *) &len, 4);
 
     if (srv->fd <= 0) {
-        mtc_dbg("%d closed, reconnect", srv->fd);
+        mtc_dbg("connection closed, reconnect");
         /*
          * TODO
          * although we reconnect to the server agin,
@@ -187,7 +186,7 @@ int tcp_srv_send(moc_srv *srv, unsigned char *buf, size_t bsize)
             return 0;
         }
     }
-    
+
     rv = ssend(srv->fd, buf, bsize, 0);
     if (rv != bsize) return 0;
     return 1;

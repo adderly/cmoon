@@ -68,12 +68,21 @@ bool base_user_quit(char *uid)
     
     mtc_dbg("%s %s %d quit", user->uid, user->ip, user->port);
 
+    close(user->fd);
+
+    /*
+     * TODO
+     * we should do this on main thread.
+     * it works fine on test, don't known how works on future
+     */
     tcpsock = user->tcpsock;
     if (tcpsock) {
         tcpsock->appdata = NULL;
         tcpsock->on_close = NULL;
+        event_del(tcpsock->evt);
+        tcp_socket_free(tcpsock);
     }
-    close(user->fd);
+    
     base_user_destroy(user);
     
     return true;

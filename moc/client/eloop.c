@@ -18,7 +18,7 @@ static void* el_routine(void *arg)
     HASH *evth = (HASH*)arg;
     char *key = NULL;
 
-    struct el_con conn[MOC_MAX_CON] = {0};
+    struct el_con conn[MOC_MAX_CON];
     int num_conn = 0;
     
     mtc_dbg("start event loop thread...");
@@ -82,8 +82,6 @@ static void* el_routine(void *arg)
                      * Orderly shutdown or error;
                      * close the file descriptor in either case.
                      */
-                    mtc_dbg("connection closed");
-
                     evt = hash_lookup(evth, conn[i].name);
                     if (evt) close_srv(evt, conn[i].order, conn[i].fd);
 
@@ -106,6 +104,8 @@ NEOERR* eloop_start(HASH *evth)
     m_stop = false;
     m_thread = calloc(1, sizeof(pthread_t));
     pthread_create(m_thread, NULL, el_routine, (void*)evth);
+
+    return STATUS_OK;
 }
 
 void eloop_stop(HASH *evth)
