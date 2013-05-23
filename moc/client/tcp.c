@@ -37,6 +37,12 @@ static int add_tcp_server_addr(moc_t *evt, in_addr_t *inetaddr, int port,
     newsrv->nblock = nblock;
     newsrv->tv.tv_sec = tv->tv_sec;
     newsrv->tv.tv_usec = tv->tv_usec;
+    newsrv->evt = evt;
+
+    newsrv->buf = NULL;
+    newsrv->len = 0;
+    newsrv->pktsize = 0;
+    newsrv->excess = 0;
 
     rv = connect(fd, (struct sockaddr *) &(newsrv->srvsa), sizeof(newsrv->srvsa));
     if (rv < 0) goto error_exit;
@@ -98,6 +104,12 @@ static int tcp_server_reconnect(moc_srv *srv)
     if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &rv, sizeof(rv)) < 0 ) goto error_exit;
 
     srv->fd = fd;
+
+    if (srv->buf) free(srv->buf);
+    srv->buf = NULL;
+    srv->len = 0;
+    srv->pktsize = 0;
+    srv->excess = 0;
 
     return 1;
 

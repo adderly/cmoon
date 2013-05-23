@@ -215,7 +215,7 @@ int parse_message(struct req_info *req,
         return 0;
     }
 
-    MSG_DUMP("recv: ",  buf, len);
+    MSG_DUMP("recv: ", buf, len);
     
     /* The header is:
      * 4 bytes    Version + ID

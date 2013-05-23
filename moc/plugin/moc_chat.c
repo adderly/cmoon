@@ -8,11 +8,34 @@ static BaseInfo *m_base = NULL;
 static NEOERR* cmd_bcst(struct chat_entry *e, QueueEntry *q)
 {
     char *uid, *msg;
+    BaseUser *user;
+    unsigned char *msgbuf = NULL;
+    size_t msgsize = 0;
+    HDF *msgnode;
+    NEOERR *err;
 
     BASE_GET_UID(q, uid);
     REQ_GET_PARAM_STR(q->hdfrcv, "msg", msg);
 
     mtc_dbg("%s broadcast: %s", uid, msg);
+
+    hdf_set_value(q->hdfrcv, PRE_OUTPUT".msg", msg);
+    msgnode = hdf_get_obj(q->hdfrcv, PRE_OUTPUT);
+
+    err = base_msg_new("bcst", msgnode,  &msgbuf, &msgsize);
+    if (err != STATUS_OK) return nerr_pass(err);
+    
+    USER_START(m_base->userh, user) {
+        if (strcmp(uid, user->uid)) {
+            mtc_dbg("need to tel %s", user->uid);
+
+            base_msg_reply(msgbuf, msgsize, user->fd);
+        }
+
+        user = USER_NEXT(m_base->userh);
+    } USER_END;
+
+    base_msg_free(msgbuf);
 
     return STATUS_OK;
 }

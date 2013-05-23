@@ -70,7 +70,8 @@ static void* el_routine(void *arg)
             if (FD_ISSET(conn[i].fd, &readset)) {
                 int rv = recv(conn[i].fd, static_buf, SBSIZE, 0);
 
-                mtc_dbg("msg from %d fd %d len %d", conn[i].order, conn[i].fd, rv);
+                mtc_dbg("msg from %s %d fd %d len %d",
+                        conn[i].name, conn[i].order, conn[i].fd, rv);
 
                 if (rv < 0 && errno == EAGAIN) {
                     /*
@@ -87,7 +88,25 @@ static void* el_routine(void *arg)
 
                     conn[i].fd = -1;
                 }
-                //process_buf(static_buf, rv);
+
+                evt = hash_lookup(evth, conn[i].name);
+                if (!evt) mtc_err("%s not in evth", conn[i].name);
+                else {
+                    moc_srv *srv = &(evt->servers[conn[i].order]);
+                    if (!srv) {
+                        mtc_err("%s out of order %d %d",
+                                conn[i].name, conn[i].order, evt->nservers);
+                        continue;
+                    }
+                    if (srv->buf == NULL)
+                        process_buf_srv(evt, conn[i].order, conn[i].fd, static_buf, rv);
+                    else {
+                        memcpy(srv->buf + srv->len, static_buf, rv);
+                        srv->len += rv;
+                        process_buf_srv(evt, conn[i].order, conn[i].fd,
+                                        srv->buf, srv->len);
+                    }
+                }
             }
         }
 

@@ -21,6 +21,9 @@ NEOERR* base_info_init(struct base_info **binfo)
     return STATUS_OK;
 }
 
+/*
+ * user
+ */
 struct base_user *base_user_find(struct base_info *binfo, char *uid)
 {
     if (!binfo || !uid) return NULL;
@@ -111,4 +114,89 @@ void base_user_destroy(void *arg)
     SAFE_FREE(user);
 
     return;
+}
+
+
+/*
+ * msg
+ */
+static unsigned char static_buf[MAX_PACKET_LEN];
+
+NEOERR* base_msg_new(char *cmd, HDF *datanode, unsigned char **buf, size_t *size)
+{
+    MCS_NOT_NULLC(cmd, datanode, buf);
+    MCS_NOT_NULLA(size);
+
+    size_t bsize;
+    unsigned char *rbuf;
+    uint32_t t;
+
+    memset(static_buf, MAX_PACKET_LEN, 0x0);
+
+    hdf_set_attr(datanode, NULL, "cmd", cmd);
+
+    bsize = pack_hdf(datanode, static_buf, MAX_PACKET_LEN);
+    if(bsize <= 0) return nerr_raise(NERR_ASSERT, "packet error");
+
+    /*
+     * copy from tcp.c tcp_reply_long()
+     */
+    bsize = 4 + 4 + 4 + 4 + bsize;
+    rbuf = calloc(1, bsize);
+    if (!rbuf) return nerr_raise(NERR_NOMEM, "alloc msg buffer");
+
+    t = htonl(bsize);
+    memcpy(rbuf, &t, 4);
+
+    /*
+     * server 主动发给 client 的包，reqid == 0, && reply == 10000
+     */
+    t = 0;
+    memcpy(rbuf + 4, &t, 4);
+    t = 10000;
+    memcpy(rbuf + 8, &t, 4);
+    
+    t = htonl(bsize);
+    memcpy(rbuf + 12, &t, 4);
+    memcpy(rbuf + 16, static_buf, bsize - 16);
+
+    *buf = rbuf;
+    *size = bsize;
+
+    return STATUS_OK;
+}
+
+NEOERR* base_msg_reply(unsigned char *buf, size_t size, int fd)
+{
+    MCS_NOT_NULLA(buf);
+    if (fd <= 0) return nerr_raise(NERR_ASSERT, "fd 非法");
+
+    /*
+     * copy from tcp.c rep_send()
+     */
+    size_t rv, c;
+
+    MSG_DUMP("send: ",  buf, size);
+    
+    c = 0;
+    while (c < size) {
+        rv = send(fd, buf + c, size - c, 0);
+
+        if (rv == size) return STATUS_OK;
+        else if (rv == 0) return STATUS_OK;
+        else if (rv < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+            return nerr_raise(NERR_IO, "send return %ld", rv);
+        }
+
+        c += rv;
+    }
+
+    return STATUS_OK;
+}
+
+void base_msg_free(unsigned char *buf)
+{
+    if (!buf) return;
+    free(buf);
 }

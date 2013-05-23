@@ -28,6 +28,15 @@ typedef struct _moc_srv {
     socklen_t srvlen;
     int nblock;
     struct timeval tv;
+    moc_t *evt;
+
+    /*
+     * process server's message
+     */
+    unsigned char *buf;
+    size_t len;
+    size_t pktsize;
+    size_t excess;
 } moc_srv;
 
 typedef struct moc_t {
@@ -66,6 +75,7 @@ moc_srv *select_srv(moc_t *evt, const char *key, size_t ksize);
 ssize_t srecv(int fd, unsigned char *buf, size_t count, int flags);
 ssize_t ssend(int fd, const unsigned char *buf, size_t count, int flags);
 void close_srv(moc_t *evt, int order, int fd);
+void process_buf_srv(moc_t *evt, int order, int fd, unsigned char *buf, size_t size);
 
 __END_DECLS
 #endif  /* __INTERNAL_H__ */

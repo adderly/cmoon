@@ -242,6 +242,8 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
         return REP_ERR_SEND;
     }
 
+#ifdef EVENTLOOP
+#else
     hdf_destroy(&evt->hdfsnd);
     hdf_init(&evt->hdfsnd);
     hdf_destroy(&evt->hdfrcv);
@@ -258,7 +260,8 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
             unpack_hdf(p+4, vsize-4, &evt->hdfrcv);
         }
     }
-
+#endif
+    
     return rv;
 }
 
