@@ -10,7 +10,7 @@ modules {
             port = 5000
 #           non_block = 1
             timeout_s = 0
-            timeout_u = 8000000
+            timeout_u = 800000
         }
     }
 
@@ -19,7 +19,8 @@ modules {
             ip = 127.0.0.1
             port = 5000
             timeout_s = 0
-            timeout_u = 8000000
+            timeout_u = 800000
         }
+
     }
 }

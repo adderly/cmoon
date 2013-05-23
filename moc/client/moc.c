@@ -1,14 +1,29 @@
 #include "moc.h"
 
 unsigned int g_reqid = 0;
-static HASH *m_evth = NULL;
+static moc_arg *m_arg = NULL;
+
+static void mutil_utc_time(struct timespec *ts)
+{
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+    clock_serv_t cclock;
+    mach_timespec_t mts;
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+    clock_get_time(cclock, &mts);
+    mach_port_deallocate(mach_task_self(), cclock);
+    ts->tv_sec = mts.tv_sec;
+    ts->tv_nsec = mts.tv_nsec;
+#else
+    clock_gettime(CLOCK_REALTIME, ts);
+#endif    
+}
 
 NEOERR* moc_init()
 {
     HDF *cfg, *node, *cnode;
     NEOERR *err;
 
-    if (m_evth) return nerr_raise(NERR_ASSERT, "moc inited already");
+    if (m_arg) return nerr_raise(NERR_ASSERT, "moc inited already");
     
     hdf_init(&cfg);
     err = hdf_read_file(cfg, MOC_CONFIG_FILE);
@@ -19,8 +34,8 @@ NEOERR* moc_init()
 
     lerr_init();
 
-    err = hash_init(&m_evth, hash_str_hash, hash_str_comp);
-    if (err != STATUS_OK) return nerr_pass(err);
+    m_arg = mocarg_init();
+    if (!m_arg) return nerr_raise(NERR_NOMEM, "alloc moc arg");
 
     node = hdf_get_child(cfg, "modules");
     while (node) {
@@ -66,13 +81,13 @@ NEOERR* moc_init()
             cnode = hdf_obj_next(cnode);
         }
 
-        if (evt->nservers) hash_insert(m_evth, (void*)strdup(mname), (void*)evt);
+        if (evt->nservers) hash_insert(m_arg->evth, (void*)strdup(mname), (void*)evt);
 
         node = hdf_obj_next(node);
     }
 
 #ifdef EVENTLOOP
-    err = eloop_start(m_evth);
+    err = eloop_start(m_arg);
     if (err != STATUS_OK) return nerr_pass(err);
 #endif
 
@@ -84,29 +99,33 @@ void moc_destroy()
 {
     char *key = NULL;
 
-    if (!m_evth) return;
+    if (!m_arg) return;
+
+    HASH *evth = m_arg->evth;
     
-    moc_t *evt = (moc_t*)hash_next(m_evth, (void**)&key);
+    moc_t *evt = (moc_t*)hash_next(evth, (void**)&key);
 
     while (evt != NULL) {
         /* TODO moc_free */
         //moc_free(evt);
-        evt = hash_next(m_evth, (void**)&key);
+        evt = hash_next(evth, (void**)&key);
     }
 
 #ifdef EVENTLOOP
-    eloop_stop(m_evth);
+    eloop_stop(m_arg);
+    mocarg_destroy(m_arg);
 #endif
 
-    hash_destroy(&m_evth);
-    m_evth = NULL;
+    m_arg = NULL;
 }
 
 HDF* moc_hdfsnd(char *module)
 {
-    if (!m_evth || !module) return NULL;
+    if (!m_arg || !module) return NULL;
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     if (!evt) return NULL;
 
     return evt->hdfsnd;
@@ -114,10 +133,12 @@ HDF* moc_hdfsnd(char *module)
 
 NEOERR* moc_set_param(char *module, char *key, char *val)
 {
-    MOC_NOT_NULLA(m_evth);
+    MOC_NOT_NULLB(m_arg, m_arg->evth);
     MOC_NOT_NULLC(module, key, val);
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     MOC_NOT_NULLA(evt);
 
     hdf_set_value(evt->hdfsnd, key, val);
@@ -127,10 +148,12 @@ NEOERR* moc_set_param(char *module, char *key, char *val)
 
 NEOERR* moc_set_param_int(char *module, char *key, int val)
 {
-    MOC_NOT_NULLA(m_evth);
+    MOC_NOT_NULLB(m_arg, m_arg->evth);
     MOC_NOT_NULLC(module, key, val);
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     MOC_NOT_NULLA(evt);
 
     hdf_set_int_value(evt->hdfsnd, key, val);
@@ -140,10 +163,12 @@ NEOERR* moc_set_param_int(char *module, char *key, int val)
 
 NEOERR* moc_set_param_uint(char *module, char *key, unsigned int val)
 {
-    MOC_NOT_NULLA(m_evth);
+    MOC_NOT_NULLB(m_arg, m_arg->evth);
     MOC_NOT_NULLC(module, key, val);
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     MOC_NOT_NULLA(evt);
 
     char buf[64];
@@ -156,10 +181,12 @@ NEOERR* moc_set_param_uint(char *module, char *key, unsigned int val)
 
 NEOERR* moc_set_param_int64(char *module, char *key, int64_t val)
 {
-    MOC_NOT_NULLA(m_evth);
+    MOC_NOT_NULLB(m_arg, m_arg->evth);
     MOC_NOT_NULLC(module, key, val);
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     MOC_NOT_NULLA(evt);
 
     char buf[64];
@@ -172,10 +199,12 @@ NEOERR* moc_set_param_int64(char *module, char *key, int64_t val)
 
 NEOERR* moc_set_param_float(char *module, char *key, float val)
 {
-    MOC_NOT_NULLA(m_evth);
+    MOC_NOT_NULLB(m_arg, m_arg->evth);
     MOC_NOT_NULLC(module, key, val);
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     MOC_NOT_NULLA(evt);
 
     char buf[64];
@@ -194,9 +223,11 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
     moc_t *evt;
     uint32_t rv = REP_OK;
 
-    if (!m_evth || !module) return REP_ERR;
+    if (!m_arg || !module) return REP_ERR;
 
-    evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    evt = hash_lookup(evth, module);
     if (!evt) {
         mtc_err("can't found %s module", module);
         return REP_ERR;
@@ -243,6 +274,24 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
     }
 
 #ifdef EVENTLOOP
+    if (!(flags & FLAGS_SYNC)) return REP_OK;
+    
+    struct timespec ts;
+    mutil_utc_time(&ts);
+    ts.tv_sec += srv->tv.tv_sec + 1;
+//    if(srv->tv.tv_usec > 1000000) srv->tv.tv_usec = 900000;
+//    ts.tv_nsec += srv->tv.tv_usec * 1000;
+    
+    pthread_mutex_lock(&(m_arg->mainsync.lock));
+    int ret = pthread_cond_timedwait(&(m_arg->mainsync.cond),
+                                     &(m_arg->mainsync.lock), &ts);
+    if (ret != 0 && ret != ETIMEDOUT) {
+        mtc_err("Error in cond_timedwait() %d", ret);
+        return REP_ERR;
+    }
+    pthread_mutex_unlock(&(m_arg->mainsync.lock));
+
+    return REP_OK;
 #else
     hdf_destroy(&evt->hdfsnd);
     hdf_init(&evt->hdfsnd);
@@ -267,9 +316,11 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
 
 HDF* moc_hdfrcv(char *module)
 {
-    if (!m_evth || !module) return NULL;
+    if (!m_arg || !module) return NULL;
 
-    moc_t *evt = hash_lookup(m_evth, module);
+    HASH *evth = m_arg->evth;
+    
+    moc_t *evt = hash_lookup(evth, module);
     if (!evt) return NULL;
 
     return evt->hdfrcv;

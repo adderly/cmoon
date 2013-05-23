@@ -21,6 +21,51 @@ static uint32_t checksum(const unsigned char *buf, size_t bsize)
     return ~sum;
 }
 
+#ifdef EVENTLOOP
+static void threadsync_create(struct threadsync *sync)
+{
+    pthread_mutexattr_t attr;
+
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
+    pthread_mutex_init(&sync->lock, &attr);
+    pthread_mutexattr_destroy(&attr);
+
+    pthread_cond_init(&sync->cond, NULL);
+}
+#endif
+
+moc_arg* mocarg_init()
+{
+    moc_arg *arg = calloc(1, sizeof(moc_arg));
+    if (!arg) return NULL;
+
+    hash_init(&arg->evth, hash_str_hash, hash_str_comp);
+
+#ifdef EVENTLOOP
+    threadsync_create(&(arg->mainsync));
+    threadsync_create(&(arg->eloopsync));
+    threadsync_create(&(arg->callbacksync));
+#endif
+
+    return arg;
+}
+
+void mocarg_destroy(moc_arg *arg)
+{
+    if (!arg) return;
+
+    if (arg->evth) hash_destroy(&arg->evth);
+
+#ifdef EVENTLOOP
+    pthread_mutex_destroy(&(arg->mainsync.lock));
+    pthread_mutex_destroy(&(arg->eloopsync.lock));
+    pthread_mutex_destroy(&(arg->callbacksync.lock));
+#endif
+
+    free(arg);
+}
+
 /*
  * Like recv(), but either fails, or returns a complete read; if we return
  * less than count is because EOF was reached.
@@ -129,14 +174,17 @@ void close_srv(moc_t *evt, int order, int fd)
     srv->fd = -1;
 }
 
+#ifdef EVENTLOOP
 /*
  * application logic message, called by eventloop thread
  */
-static NEOERR* parse_message(moc_srv *srv, unsigned char *buf, size_t len)
+static NEOERR* parse_message(moc_srv *srv, unsigned char *buf, size_t len, moc_arg *arg)
 {
     uint32_t id, reply;
     unsigned char *payload;
     size_t psize, rv;
+
+    MOC_NOT_NULLB(arg, arg->evth);
     
     if (!srv || !buf || len < 8) return nerr_raise(NERR_ASSERT, "illegal packet");
 
@@ -153,22 +201,28 @@ static NEOERR* parse_message(moc_srv *srv, unsigned char *buf, size_t len)
     payload = buf + 8;
     psize = len - 8;
 
-    if (id == 0 && reply === 10000) {
+    if (id == 0 && reply == 10000) {
         /*
          * server push
          */
-        if (psize <= 0) return nerr_raise(NERR_ASSERT, "server pushed empty message");
+        if (psize < 4) return nerr_raise(NERR_ASSERT, "server pushed empty message");
 
-        rv = unpack_hdf(payload, len, &srv->evt->hdfrcv);
+        rv = unpack_hdf(payload + 4, psize - 4, &(srv->evt->hdfrcv));
         if (rv <= 0) return nerr_raise(NERR_ASSERT, "server pushed illegal message");
 
+        TRACE_HDF(srv->evt->hdfrcv);
+
         char *cmd = NULL;
-        HDF_ATTR *attr = hdf_obj_attr(srv->evt->hdfrcv);
+        HDF_ATTR *attr = hdf_get_attr(srv->evt->hdfrcv, "_Reserve");
         while (attr != NULL) {
             if (!strcmp(attr->key, "cmd")) cmd = attr->value;
             attr = attr->next;
         }
         if (!cmd) return nerr_raise(NERR_ASSERT, "cmd not supplied");
+
+        mtc_dbg("receive cmd %s", cmd);
+        
+        hdf_remove_tree(srv->evt->hdfrcv, "_Reserve");
 
         /*
          * notify callback thread
@@ -181,24 +235,31 @@ static NEOERR* parse_message(moc_srv *srv, unsigned char *buf, size_t len)
         if (id < g_reqid)
             return nerr_raise(NERR_ASSERT, "id not match %d %d", g_reqid, id);
 
-        if (psize > 0) {
-            rv = unpack_hdf(payload, len, &srv->evt->hdfrcv);
+        if (psize >= 4) {
+            pthread_mutex_lock(&(arg->mainsync.lock));
+            rv = unpack_hdf(payload + 4, psize - 4, &(srv->evt->hdfrcv));
+            pthread_mutex_unlock(&(arg->mainsync.lock));
             if (rv <= 0)
                 return nerr_raise(NERR_ASSERT, "server responsed illegal message");
+
+            TRACE_HDF(srv->evt->hdfrcv);
         }
 
         /*
          * notify main thread
          */
+        pthread_cond_signal(&(arg->mainsync.cond));
     }
     
     return STATUS_OK;
 }
 
-void process_buf_srv(moc_t *evt, int order, int fd, unsigned char *buf, size_t len)
+void process_buf_srv(moc_t *evt, int order, int fd,
+                     unsigned char *buf, size_t len, moc_arg *arg)
 {
     uint32_t totaltoget = 0;
     moc_srv *srv;
+    NEOERR *err;
 
     if (!evt || !buf) {
         mtc_err("param null");
@@ -256,7 +317,7 @@ void process_buf_srv(moc_t *evt, int order, int fd, unsigned char *buf, size_t l
         len = totaltoget;
     }
 
-    err = parse_message(srv, buf + 4, len - 4);
+    err = parse_message(srv, buf + 4, len - 4, arg);
     TRACE_NOK(err);
 
     if (srv->excess) {
@@ -264,7 +325,7 @@ void process_buf_srv(moc_t *evt, int order, int fd, unsigned char *buf, size_t l
         srv->len = srv->excess;
         srv->excess = 0;
 
-        process_buf_srv(evt, order, fd, buf, srv->len);
+        process_buf_srv(evt, order, fd, buf, srv->len, arg);
         /* need reprocess */
         return;
     }
@@ -279,3 +340,4 @@ void process_buf_srv(moc_t *evt, int order, int fd, unsigned char *buf, size_t l
 
     return;
 }
+#endif

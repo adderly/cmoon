@@ -3,8 +3,8 @@
 
 __BEGIN_DECLS
 
-NEOERR* eloop_start(HASH *evth);
-void eloop_stop(HASH *evth);
+NEOERR* eloop_start(moc_arg *arg);
+void eloop_stop(moc_arg *arg);
 
 __END_DECLS
 #endif  /* __ELOOP_H__ */

@@ -37,6 +37,8 @@ static NEOERR* cmd_bcst(struct chat_entry *e, QueueEntry *q)
 
     base_msg_free(msgbuf);
 
+    hdf_set_value(q->hdfsnd, "ack", "done");
+
     return STATUS_OK;
 }
 

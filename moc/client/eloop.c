@@ -1,8 +1,5 @@
 #include "moc.h"
 
-#define MOC_MAX_CON 100
-#define SBSIZE (68 * 1024)
-
 struct el_con {
     char *name;
     int order;                  /* used on reconnect */
@@ -15,7 +12,8 @@ static unsigned char static_buf[SBSIZE];
 
 static void* el_routine(void *arg)
 {
-    HASH *evth = (HASH*)arg;
+    moc_arg *earg = (moc_arg*)arg;
+    HASH *evth = (HASH*)earg->evth;
     char *key = NULL;
 
     struct el_con conn[MOC_MAX_CON];
@@ -99,12 +97,13 @@ static void* el_routine(void *arg)
                         continue;
                     }
                     if (srv->buf == NULL)
-                        process_buf_srv(evt, conn[i].order, conn[i].fd, static_buf, rv);
+                        process_buf_srv(evt, conn[i].order, conn[i].fd,
+                                        static_buf, rv, earg);
                     else {
                         memcpy(srv->buf + srv->len, static_buf, rv);
                         srv->len += rv;
                         process_buf_srv(evt, conn[i].order, conn[i].fd,
-                                        srv->buf, srv->len);
+                                        srv->buf, srv->len, earg);
                     }
                 }
             }
@@ -116,18 +115,18 @@ static void* el_routine(void *arg)
     return NULL;
 }
 
-NEOERR* eloop_start(HASH *evth)
+NEOERR* eloop_start(moc_arg *arg)
 {
     if (m_thread) return nerr_raise(NERR_ASSERT, "eloop started already");
 
     m_stop = false;
     m_thread = calloc(1, sizeof(pthread_t));
-    pthread_create(m_thread, NULL, el_routine, (void*)evth);
+    pthread_create(m_thread, NULL, el_routine, (void*)arg);
 
     return STATUS_OK;
 }
 
-void eloop_stop(HASH *evth)
+void eloop_stop(moc_arg *arg)
 {
     if (!m_thread) return;
     

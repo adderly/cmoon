@@ -124,6 +124,8 @@ static unsigned char static_buf[MAX_PACKET_LEN];
 
 NEOERR* base_msg_new(char *cmd, HDF *datanode, unsigned char **buf, size_t *size)
 {
+    NEOERR *err;
+
     MCS_NOT_NULLC(cmd, datanode, buf);
     MCS_NOT_NULLA(size);
 
@@ -133,7 +135,11 @@ NEOERR* base_msg_new(char *cmd, HDF *datanode, unsigned char **buf, size_t *size
 
     memset(static_buf, MAX_PACKET_LEN, 0x0);
 
-    hdf_set_attr(datanode, NULL, "cmd", cmd);
+    hdf_set_value(datanode, "_Reserve", "moc");
+    err = hdf_set_attr(datanode, "_Reserve", "cmd", cmd);
+    if (err != STATUS_OK) return nerr_pass(err);
+
+    TRACE_HDF(datanode);
 
     bsize = pack_hdf(datanode, static_buf, MAX_PACKET_LEN);
     if(bsize <= 0) return nerr_raise(NERR_ASSERT, "packet error");
@@ -153,7 +159,7 @@ NEOERR* base_msg_new(char *cmd, HDF *datanode, unsigned char **buf, size_t *size
      */
     t = 0;
     memcpy(rbuf + 4, &t, 4);
-    t = 10000;
+    t = htonl(10000);
     memcpy(rbuf + 8, &t, 4);
     
     t = htonl(bsize);
