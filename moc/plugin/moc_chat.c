@@ -5,6 +5,75 @@
 
 static BaseInfo *m_base = NULL;
 
+static NEOERR* cmd_join(struct chat_entry *e, QueueEntry *q)
+{
+    BaseUser *user;
+    char *uid;
+    unsigned char *msgbuf = NULL;
+    size_t msgsize = 0;
+    HDF *msgnode;
+    NEOERR *err;
+
+    REQ_GET_PARAM_STR(q->hdfrcv, "userid", uid);
+
+    base_user_quit(m_base, uid);
+    base_user_new(m_base, uid, q);
+
+    hdf_set_value(q->hdfrcv, PRE_OUTPUT".userid", uid);
+    msgnode = hdf_get_obj(q->hdfrcv, PRE_OUTPUT);
+
+    err = base_msg_new("join", msgnode,  &msgbuf, &msgsize);
+    if (err != STATUS_OK) return nerr_pass(err);
+    
+    USER_START(m_base->userh, user) {
+        if (strcmp(uid, user->uid)) {
+            mtc_dbg("need to tel %s", user->uid);
+
+            base_msg_reply(msgbuf, msgsize, user->fd);
+        }
+
+        user = USER_NEXT(m_base->userh);
+    } USER_END;
+
+    base_msg_free(msgbuf);
+
+    return STATUS_OK;
+}
+
+static NEOERR* cmd_quit(struct chat_entry *e, QueueEntry *q)
+{
+    BaseUser *user;
+    char *uid;
+    unsigned char *msgbuf = NULL;
+    size_t msgsize = 0;
+    HDF *msgnode;
+    NEOERR *err;
+
+    REQ_GET_PARAM_STR(q->hdfrcv, "userid", uid);
+
+    hdf_set_value(q->hdfrcv, PRE_OUTPUT".userid", uid);
+    msgnode = hdf_get_obj(q->hdfrcv, PRE_OUTPUT);
+
+    err = base_msg_new("quit", msgnode,  &msgbuf, &msgsize);
+    if (err != STATUS_OK) return nerr_pass(err);
+    
+    USER_START(m_base->userh, user) {
+        if (strcmp(uid, user->uid)) {
+            mtc_dbg("need to tel %s", user->uid);
+
+            base_msg_reply(msgbuf, msgsize, user->fd);
+        }
+
+        user = USER_NEXT(m_base->userh);
+    } USER_END;
+
+    base_msg_free(msgbuf);
+
+    base_user_quit(m_base, uid);
+
+    return STATUS_OK;
+}
+
 static NEOERR* cmd_bcst(struct chat_entry *e, QueueEntry *q)
 {
     char *uid, *msg;
@@ -19,6 +88,7 @@ static NEOERR* cmd_bcst(struct chat_entry *e, QueueEntry *q)
 
     mtc_dbg("%s broadcast: %s", uid, msg);
 
+    hdf_set_value(q->hdfrcv, PRE_OUTPUT".userid", uid);
     hdf_set_value(q->hdfrcv, PRE_OUTPUT".msg", msg);
     msgnode = hdf_get_obj(q->hdfrcv, PRE_OUTPUT);
 
@@ -36,8 +106,6 @@ static NEOERR* cmd_bcst(struct chat_entry *e, QueueEntry *q)
     } USER_END;
 
     base_msg_free(msgbuf);
-
-    hdf_set_value(q->hdfsnd, "ack", "done");
 
     return STATUS_OK;
 }
@@ -64,7 +132,12 @@ static void chat_process_driver(EventEntry *entry, QueueEntry *q)
     mtc_dbg("process cmd %u", q->operation);
     switch (q->operation) {
         CASE_SYS_CMD(q->operation, q, e->cd, err);
-        CASE_BASE_CMD(m_base, q);
+    case REQ_CMD_BASE_JOIN:
+        err = cmd_join(e, q);
+        break;
+    case REQ_CMD_BASE_QUIT:
+        err = cmd_quit(e, q);
+        break;
     case REQ_CMD_CHAT_BCST:
         err = cmd_bcst(e, q);
         break;

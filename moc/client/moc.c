@@ -3,21 +3,6 @@
 unsigned int g_reqid = 0;
 static moc_arg *m_arg = NULL;
 
-static void mutil_utc_time(struct timespec *ts)
-{
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
-    clock_serv_t cclock;
-    mach_timespec_t mts;
-    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-    clock_get_time(cclock, &mts);
-    mach_port_deallocate(mach_task_self(), cclock);
-    ts->tv_sec = mts.tv_sec;
-    ts->tv_nsec = mts.tv_nsec;
-#else
-    clock_gettime(CLOCK_REALTIME, ts);
-#endif    
-}
-
 NEOERR* moc_init()
 {
     HDF *cfg, *node, *cnode;
@@ -89,6 +74,9 @@ NEOERR* moc_init()
 #ifdef EVENTLOOP
     err = eloop_start(m_arg);
     if (err != STATUS_OK) return nerr_pass(err);
+
+    err = mcbk_start(m_arg);
+    if (err != STATUS_OK) return nerr_pass(err);
 #endif
 
     hdf_destroy(&cfg);
@@ -101,21 +89,29 @@ void moc_destroy()
 
     if (!m_arg) return;
 
-    HASH *evth = m_arg->evth;
-    
-    moc_t *evt = (moc_t*)hash_next(evth, (void**)&key);
-
+    HASH *table = m_arg->evth;
+    moc_t *evt = (moc_t*)hash_next(table, (void**)&key);
     while (evt != NULL) {
         /* TODO moc_free */
         //moc_free(evt);
-        evt = hash_next(evth, (void**)&key);
+        evt = hash_next(table, (void**)&key);
+    }
+
+    key = NULL;
+    table = m_arg->cbkh;
+    struct moc_cbk *c = hash_next(table, (void**)&key);
+    while (c) {
+        mcbk_destroy(c);
+        
+        c = hash_next(table, (void**)&key);
     }
 
 #ifdef EVENTLOOP
     eloop_stop(m_arg);
-    mocarg_destroy(m_arg);
+    mcbk_stop(m_arg);
 #endif
 
+    mocarg_destroy(m_arg);
     m_arg = NULL;
 }
 
@@ -273,6 +269,15 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
         return REP_ERR_SEND;
     }
 
+    /*
+     * application should make sure call moc_trigger() in turn
+     * or, the evt->hdfrcv is untrustable
+     */
+    hdf_destroy(&evt->hdfsnd);
+    hdf_init(&evt->hdfsnd);
+    hdf_destroy(&evt->hdfrcv);
+    hdf_init(&evt->hdfrcv);
+
 #ifdef EVENTLOOP
     if (!(flags & FLAGS_SYNC)) return REP_OK;
     
@@ -282,21 +287,16 @@ int moc_trigger(char *module, char *key, unsigned short cmd, unsigned short flag
 //    if(srv->tv.tv_usec > 1000000) srv->tv.tv_usec = 900000;
 //    ts.tv_nsec += srv->tv.tv_usec * 1000;
     
-    pthread_mutex_lock(&(m_arg->mainsync.lock));
-    int ret = pthread_cond_timedwait(&(m_arg->mainsync.cond),
-                                     &(m_arg->mainsync.lock), &ts);
+    mssync_lock(&(m_arg->mainsync));
+    int ret = mssync_timedwait(&(m_arg->mainsync), &ts);
     if (ret != 0 && ret != ETIMEDOUT) {
-        mtc_err("Error in cond_timedwait() %d", ret);
+        mtc_err("Error in timedwait() %d", ret);
         return REP_ERR;
     }
-    pthread_mutex_unlock(&(m_arg->mainsync.lock));
+    mssync_unlock(&(m_arg->mainsync));
 
     return REP_OK;
 #else
-    hdf_destroy(&evt->hdfsnd);
-    hdf_init(&evt->hdfsnd);
-    hdf_destroy(&evt->hdfrcv);
-    hdf_init(&evt->hdfrcv);
     
     if (flags & FLAGS_SYNC) {
         vsize = 0;
@@ -326,9 +326,20 @@ HDF* moc_hdfrcv(char *module)
     return evt->hdfrcv;
 }
 
-NEOERR* moc_regist_callback(char *module, unsigned short cmd, MocCallback cmdcbk)
+NEOERR* moc_regist_callback(char *module, char *cmd, MocCallback cmdcbk)
 {
+    MOC_NOT_NULLB(m_arg, m_arg->cbkh);
+    MOC_NOT_NULLC(module, cmd, cmdcbk);
+    
 #ifdef EVENTLOOP
+    struct moc_cbk *c = mcbk_create();
+    if (!c) return nerr_raise(NERR_NOMEM, "alloc cbk");
+    c->ename = strdup(module);
+    c->cmd = strdup(cmd);
+    c->callback = cmdcbk;
+
+    mcbk_regist(m_arg->cbkh, module, cmd, c);
+    
 #else
     mtc_foo("can't regist callback without EVENTLOOP");
 #endif

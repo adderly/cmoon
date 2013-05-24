@@ -40,20 +40,45 @@ __BEGIN_DECLS
  * types
  * ========
  */
+typedef void (*MocCallback)(HDF *datanode);
+
 #ifdef EVENTLOOP
-struct threadsync {
+struct mssync {
     pthread_mutex_t lock;
     pthread_cond_t cond;
+};
+
+struct msqueue {
+    size_t size;
+    struct msqueue_entry *top, *bottom;
+};
+
+struct msqueue_entry {
+    char *ename;
+    char *cmd;
+    
+    HDF *hdfrcv;
+    HDF *hdfsnd;
+
+    struct msqueue_entry *prev;
+};
+
+struct moc_cbk {
+    char *ename;
+    char *cmd;
+    MocCallback callback;
 };
 #endif
 
 typedef struct {
     HASH *evth;
+    HASH *cbkh;
 
 #ifdef EVENTLOOP
-    struct threadsync mainsync;
-    struct threadsync eloopsync;
-    struct threadsync callbacksync;
+    struct mssync mainsync;
+    struct mssync eloopsync;
+    struct mssync callbacksync;
+    struct msqueue *callbackqueue;
 #endif
 } moc_arg;
 
@@ -91,8 +116,6 @@ typedef struct moc_t {
     HDF *hdfsnd;
 } moc_t;
 
-typedef void (*MocCallback)(HDF *hdfrcv);
-
 
 /*
  * externs
@@ -113,11 +136,8 @@ moc_srv *select_srv(moc_t *evt, const char *key, size_t ksize);
 ssize_t srecv(int fd, unsigned char *buf, size_t count, int flags);
 ssize_t ssend(int fd, const unsigned char *buf, size_t count, int flags);
 void close_srv(moc_t *evt, int order, int fd);
+void mutil_utc_time(struct timespec *ts);
 
-#ifdef EVENTLOOP
-void process_buf_srv(moc_t *evt, int order, int fd,
-                     unsigned char *buf, size_t size, moc_arg *arg);
-#endif
 
 __END_DECLS
 #endif  /* __INTERNAL_H__ */

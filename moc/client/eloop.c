@@ -82,7 +82,7 @@ static void* el_routine(void *arg)
                      * close the file descriptor in either case.
                      */
                     evt = hash_lookup(evth, conn[i].name);
-                    if (evt) close_srv(evt, conn[i].order, conn[i].fd);
+                    if (evt) mssrv_close(evt, conn[i].order, conn[i].fd);
 
                     conn[i].fd = -1;
                 }
@@ -97,13 +97,13 @@ static void* el_routine(void *arg)
                         continue;
                     }
                     if (srv->buf == NULL)
-                        process_buf_srv(evt, conn[i].order, conn[i].fd,
-                                        static_buf, rv, earg);
+                        msparse_buf(evt, conn[i].order, conn[i].fd,
+                                    static_buf, rv, earg);
                     else {
                         memcpy(srv->buf + srv->len, static_buf, rv);
                         srv->len += rv;
-                        process_buf_srv(evt, conn[i].order, conn[i].fd,
-                                        srv->buf, srv->len, earg);
+                        msparse_buf(evt, conn[i].order, conn[i].fd,
+                                    srv->buf, srv->len, earg);
                     }
                 }
             }

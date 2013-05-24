@@ -29,6 +29,23 @@ static void rand_string_with_len(char *s, int len)
     s[x] = '\0';
 }
 
+void joincbk(HDF *datanode)
+{
+    printf("%s 插入\n", hdf_get_value(datanode, "userid", NULL));
+}
+void quitcbk(HDF *datanode)
+{
+    printf("%s 抽出\n", hdf_get_value(datanode, "userid", NULL));
+}
+void bcstcbk(HDF *datanode)
+{
+    mtc_dbg("oncmd bcst");
+
+    fprintf(stdout, "%s: %s\n",
+            hdf_get_value(datanode, "userid", NULL),
+            hdf_get_value(datanode, "msg", NULL));
+}
+
 int main()
 {
     NEOERR *err;
@@ -36,6 +53,13 @@ int main()
     int ret;
 
     err = moc_init();
+    OUTPUT_NOK(err);
+
+    err = moc_regist_callback("chat", "join", joincbk);
+    OUTPUT_NOK(err);
+    err = moc_regist_callback("chat", "quit", quitcbk);
+    OUTPUT_NOK(err);
+    err = moc_regist_callback("chat", "bcst", bcstcbk);
     OUTPUT_NOK(err);
 
     rand_string_with_len(nick, 7);

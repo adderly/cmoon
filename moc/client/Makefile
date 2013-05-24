@@ -9,7 +9,7 @@ SOURCE1 = cache.c
 SOURCES = cache.c lerr.c packet.c mtrace.c    internal.c moc.c tcp.c
 ifeq ($(EVENTLOOP), 1)
 CFLAGS += -DEVENTLOOP
-SOURCES += eloop.c
+SOURCES += eloop.c mscli.c mcbk.c
 endif
 
 OBJS = $(patsubst %.c, %.o, $(SOURCES))

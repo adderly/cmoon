@@ -26,16 +26,19 @@
 #include <netinet/tcp.h>    /* TCP stuff */
 
 #include "ClearSilver.h"
+#include "moc-private.h"     /* mos's public lib */
 #include "mtrace.h"          /* trace */
 #include "internal.h"        /* moc's client internal */
 #include "tcp.h"
-#include "moc-private.h"     /* mos's public lib */
 
 #ifdef EVENTLOOP
 #include <pthread.h>        /* for pthread_t */
 #include <sys/select.h>     /* select() */
 #include "eloop.h"
+#include "mcbk.h"
+#include "mscli.h"          /* process moc server to client stuff */
 #endif
+
 
 __BEGIN_DECLS
 
@@ -91,7 +94,7 @@ HDF* moc_hdfrcv(char *module);
  * 绑定回调函数
  * 针对服务器主动发起的命令，绑定对应的回调函数
  */
-NEOERR* moc_regist_callback(char *module, unsigned short cmd, MocCallback cmdcbk);
+NEOERR* moc_regist_callback(char *module, char *cmd, MocCallback cmdcbk);
 
 
 __END_DECLS
