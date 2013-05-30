@@ -6,10 +6,10 @@ include $(BASEDIR)Make.env
 
 CFLAGS += -rdynamic
 INC_MOON += -I../lib
-LIB_MOON += -levent -L../lib -lmocpub
+LIB_MOON += -levent
 
-SOURCE1 = main.c
-SOURCES = main.c mocd.c net.c parse.c queue.c syscmd.c tcp.c
+SOURCE1 = cache.c
+SOURCES = cache.c main.c mocd.c lerr.c net.c packet.c parse.c queue.c syscmd.c tcp.c
 OBJS = $(patsubst %.c, %.o, $(SOURCES))
 DEPEND = .depend
 

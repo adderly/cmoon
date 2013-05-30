@@ -1,5 +1,5 @@
-INCS = -I../client -I../lib -I/usr/local/include/ClearSilver
-LIBS = -L../client -lmoc -lneo_utl -lpthread -lrt
+INCS = -I../client -I../client/clearsilver -I../server
+LIBS = -L../client -lmoc -lpthread -lrt
 
 SOURCES = $(wildcard *.c)
 BINARY = $(patsubst %.c, %, $(SOURCES))

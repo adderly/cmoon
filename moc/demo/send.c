@@ -24,7 +24,7 @@ int main()
     NEOERR *err;
     int ret;
 
-    err = moc_init();
+    err = moc_init(NULL);
     OUTPUT_NOK(err);
 
     moc_set_param("base", "userid", "747");

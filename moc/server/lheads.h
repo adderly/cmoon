@@ -8,6 +8,7 @@
 
 #include "lglobal.h"
 
+#include "cache.h"
 #include "queue.h"
 #include "parse.h"
 #include "req.h"

@@ -3,20 +3,32 @@
 unsigned int g_reqid = 0;
 static moc_arg *m_arg = NULL;
 
-NEOERR* moc_init()
+NEOERR* moc_init(char *path)
 {
     HDF *cfg, *node, *cnode;
+    char fpath[_POSIX_PATH_MAX], fname[_POSIX_PATH_MAX];
     NEOERR *err;
 
     if (m_arg) return nerr_raise(NERR_ASSERT, "moc inited already");
-    
+
+    /*
+     * config file
+     */
+    if (path) strncpy(fpath, path, sizeof(fpath));
+    else getcwd(fpath, sizeof(fpath));
+    snprintf(fname, sizeof(fname), "%s/%s", fpath, MOC_CONFIG_FILE);
     hdf_init(&cfg);
-    err = hdf_read_file(cfg, MOC_CONFIG_FILE);
+    err = hdf_read_file(cfg, fname);
     if (err != STATUS_OK) return nerr_pass(err);
 
-    mtc_init(hdf_get_value(cfg, "Config.logfile", "/tmp/mocclient"),
-             hdf_get_int_value(cfg, "Config.trace_level", TC_DEFAULT_LEVEL));
+    /*
+     * log file
+     */
+    snprintf(fname, sizeof(fname), "%s/%s", fpath,
+             hdf_get_value(cfg, "Config.logfile", "mocclient"));
+    mtc_init(fname, hdf_get_int_value(cfg, "Config.trace_level", TC_DEFAULT_LEVEL));
 
+    
     lerr_init();
 
     m_arg = mocarg_init();
@@ -97,6 +109,7 @@ void moc_destroy()
         evt = hash_next(table, (void**)&key);
     }
 
+#ifdef EVENTLOOP
     key = NULL;
     table = m_arg->cbkh;
     struct moc_cbk *c = hash_next(table, (void**)&key);
@@ -106,7 +119,6 @@ void moc_destroy()
         c = hash_next(table, (void**)&key);
     }
 
-#ifdef EVENTLOOP
     eloop_stop(m_arg);
     mcbk_stop(m_arg);
 #endif

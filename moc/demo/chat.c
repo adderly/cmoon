@@ -52,7 +52,7 @@ int main()
     char msg[1000], nick[8];
     int ret;
 
-    err = moc_init();
+    err = moc_init(NULL);
     OUTPUT_NOK(err);
 
     err = moc_regist_callback("chat", "join", joincbk);

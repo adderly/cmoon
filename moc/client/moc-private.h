@@ -12,7 +12,6 @@
 
 #include "lerr.h"
 #include "packet.h"
-#include "cache.h"
 
 __BEGIN_DECLS
 

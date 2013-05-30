@@ -2,8 +2,6 @@
  * moc client
  * client should runable on Linux, Mac, Android, ios...
  * so, make it as clean as possible
- * current depend on:
- *     ClearSilver neo_utl
  */
 
 #ifndef __MOC_H__
@@ -18,6 +16,12 @@
 #include <netdb.h>         /* gethostbyname() */
 #include <fcntl.h>
 #include <errno.h>
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#include <crt_externs.h>
+#define environ (*_NSGetEnviron())
+#endif
 
 #include <sys/types.h>     /* socket defines */
 #include <sys/socket.h>
@@ -26,9 +30,9 @@
 #include <netinet/tcp.h>    /* TCP stuff */
 
 #include "ClearSilver.h"
-#include "moc-private.h"     /* mos's public lib */
 #include "mtrace.h"          /* trace */
-#include "internal.h"        /* moc's client internal */
+#include "moc-private.h"     /* client&server's public lib */
+#include "internal.h"        /* client internal */
 #include "tcp.h"
 
 #ifdef EVENTLOOP
@@ -42,13 +46,14 @@
 
 __BEGIN_DECLS
 
-#define MOC_CONFIG_FILE        "/etc/moc/client.hdf"
+#define MOC_CONFIG_FILE        "mocclient.hdf"
 
 /*
  * 初始化
  * 该函数会从配置文件中读取所所有服务器列表, 初始化
+ * path 软件运行时的绝对路径
  */
-NEOERR* moc_init();
+NEOERR* moc_init(char *path);
 
 /*
  * 销毁

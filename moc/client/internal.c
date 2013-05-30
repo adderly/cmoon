@@ -122,7 +122,7 @@ int compare_servers(const void *s1, const void *s2)
     if (a1 < a2) {
         return -1;
     } else if (a1 == a2) {
-        in_port_t p1, p2;
+        uint16_t p1, p2;
         p1 = srv1->srvsa.sin_port;
         p2 = srv2->srvsa.sin_port;
 
