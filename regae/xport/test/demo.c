@@ -5,6 +5,8 @@
 
 #include "mevent.h"
 
+HDF *g_cfg = NULL;
+
 int main(int argc, char *argv[])
 {
     int ret;
