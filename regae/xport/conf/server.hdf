@@ -1,9 +1,9 @@
 Config {
+    logfile = /var/log/moon/voov/mevent
     trace_level = 5
 }
 
-Mevent {
-    logfile = /var/log/moon/voov/mevent
+Server {
     plugins {
         0 = skeleton
     }

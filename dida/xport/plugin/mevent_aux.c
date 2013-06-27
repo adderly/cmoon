@@ -261,7 +261,7 @@ insert:
 static NEOERR* aux_cmd_inboxget(struct aux_entry *e, QueueEntry *q)
 {
     unsigned char *val = NULL; size_t vsize = 0;
-    int count, offset;
+    int npp, nst;
     int mid, type = 0;
     NEOERR *err;
 
