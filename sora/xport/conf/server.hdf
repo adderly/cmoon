@@ -1,0 +1,63 @@
+Config {
+    logfile = /var/log/moon/sora/mevent
+    trace_level = 6
+}
+
+Server {
+    plugins {
+        0 = member
+        1 = sodo
+    }
+    smsalarm {
+        db {
+            dbsn = pgsql:dbname=lcs_mtool host=localhost user=lcser password=loveu
+        }
+        leader {
+            ml = 15111231681
+        }
+    }
+}
+
+Plugin {
+    member {
+        mgdb {
+            host = 172.10.7.211
+            port = 27017
+            timeout = 4000
+            name = hntvapp
+            user = tazai
+            pass = hifly1234
+        }
+        InsertCol {
+            member {
+                mname [require=true] = mname
+                mid [require=true, type=102] = mid
+                mnick [require=true] = mnick
+                statu [type=102, default=0] = statu
+                phone = phone
+                msn [require=true] = msn
+                mmsn = mmsn
+                intime [type=106]= _NOW
+            }
+        }
+        UpdateCol {
+            member {
+                mnick = mnick
+                statu [type=102] = statu
+                phone = phone
+                msn = msn
+                mmsn = mmsn
+            }
+        }
+    }
+    sodo {
+        mgdb {
+            host = 172.10.7.211
+            port = 27017
+            timeout = 4000
+            name = hntvapp
+            user = tazai
+            pass = hifly1234
+        }
+    }
+}

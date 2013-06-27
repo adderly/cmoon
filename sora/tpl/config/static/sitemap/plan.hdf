@@ -1,0 +1,5 @@
+sitemap_plan {
+    Layout = sitemaps/plan.xml
+    DataGeter = plan_of_today
+    Output [ftime=%F] = sitemaps/plan/$ftime$.xml
+}

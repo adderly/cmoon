@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title><?cs var: Layout.title ?> - sora</title>
+    <link rel="stylesheet" type="text/css" href="/css/b/base.css" />
+    <?cs var: Layout.css ?>
+    <?cs linclude:Include.css ?>
+
+    <script type="text/javascript" src="/js/b/base.js"></script>
+    <?cs var: Layout.js ?>
+    <?cs linclude:Include.js ?>
+  </head>
+
+  <body>
+    <div id="bd-top">
+    </div>
+
+    <div id="bd-mid">
+      <div id="bd-content" class="clearfix">
+        <?cs linclude!Include.content ?>
+        <?cs var: Content.content ?>
+      </div>
+    </div>
+
+    <div id="bd-bot">
+    </div>
+  </body>
+  
+</html>

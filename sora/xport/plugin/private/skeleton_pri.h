@@ -1,0 +1,1 @@
+/usr/local/moon/event/plugin/private/skeleton_pri.h

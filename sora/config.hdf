@@ -1,0 +1,47 @@
+Config {
+    trace_level = 7
+}
+
+Dataset {
+    layout.html {
+        tabs {
+            0 {
+                name = 首页
+                href = /index.html
+            }
+        }
+    }
+}
+
+Db {
+    Dsn {
+    }
+    QueryCond {
+    }
+    UpdateCol {
+    }
+    InsertCol {
+    }
+}
+
+Memcached {
+    ip = 127.0.0.1
+    port = 11211
+}
+
+Mevent {
+    0 = member
+    1 = sodo
+    2 = trace
+}
+
+ClientReqLimit {
+    test_request_data_get = 1
+}
+
+FileCache {
+    0 {
+        uri = ^/test/request$
+        tm_cache = 1800
+    }
+}
