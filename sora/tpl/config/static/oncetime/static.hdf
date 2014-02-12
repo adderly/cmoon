@@ -1,0 +1,15 @@
+index {
+    Layout = layout.html
+    Dataset {
+        Layout {
+            css = <link rel="stylesheet" type="text/css" href="/css/b/index.css" />
+            js = <script src="/js/b/index.js"></script>
+            title = 首页
+            tabpart = 0
+        }
+        Include {
+            content = index.html
+        }
+    }
+    Output = index.html
+}

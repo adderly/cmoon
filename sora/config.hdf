@@ -1,0 +1,64 @@
+sora = 三联服务
+
+Config {
+    trace_level = 7
+    http_max_upload = 2097152
+    font {
+        member {
+            path = /var/www/dida/tpl/FreeMonoBold.ttf
+            size = 14.
+        }
+        plan {
+            path = /var/www/dida/tpl/FreeMonoBold.ttf
+            size = 14.
+        }
+    }
+}
+
+Dataset {
+    layout.html {
+        tabs {
+            0 {
+                name = 首页
+                href = /index.html
+            }
+        }
+    }
+}
+
+Db {
+    Dsn {
+        mgdbhost = 127.0.0.1
+        mgdbport = 27017
+        timeout = 4000
+        dbname = sora
+        dbuser = unioner
+        dbpass = union
+    }
+    QueryCond {
+    }
+    UpdateCol {
+    }
+    InsertCol {
+    }
+}
+
+Memcached {
+    ip = 127.0.0.1
+    port = 11211
+}
+
+Mevent {
+    0 = skeleton
+}
+
+ClientReqLimit {
+    test_request_data_get = 1
+}
+
+FileCache {
+    0 {
+        uri = ^/test/request$
+        tm_cache = 1800
+    }
+}
