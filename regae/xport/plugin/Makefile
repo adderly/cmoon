@@ -9,7 +9,7 @@ PREFIX=/usr/local
 
 CFLAGS += -shared -fPIC
 
-CFLAGS += -I$(BASEDIR)event/daemon/ $(INC_MOON) -Iprivate
+CFLAGS += -I$(BASEDIR)event/daemon/ -Iprivate/ $(INC_MOON)
 
 SOURCES = $(wildcard *.c)
 LIB_PLUGIN = $(patsubst %.c, %.so, $(SOURCES))
@@ -19,8 +19,8 @@ all: $(LIB_PLUGIN)
 mevent_%.so: private/%_internal.c private/%_timer.c mevent_%.c
 	@echo "$(CC) -o $@"
 ifeq ($(UNAME), Darwin)
-	@$(CC) $(CFLAGS) -c $^
-	@$(CC) -dynamiclib -undefined suppress -flat_namespace $(patsubst %.c, %.o, $<) -o $@
+	$(CC) $(CFLAGS) -c $^
+	@$(CC) $(CFLAGS)-dynamiclib -undefined suppress -flat_namespace -o $@ $^
 else
 	@$(CC) $(CFLAGS) -o $@ $^
 endif
