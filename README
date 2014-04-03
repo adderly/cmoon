@@ -1,148 +1,148 @@
-系统性能
+System Performance
 ======
 s.m. is cloud all the time!
 
-测试对象       测试时间     响应数/秒      失败率
-php-fpm      180秒      19066.339   0.017191%
-moon         180秒      20281.45    0.022023%
+Test object test response time / sec failure rate
+php-fpm 180秒19066.339 0.017191%
+moon 180秒20281.45 0.022023%
 
-详细请参考 doc/webbench/dynamic-get-s.txt
+Refer to doc / webbench / dynamic-get-s.txt
 
-通过使用 webbench 进行跨机器、高速内网环境测试， 动态页面获取， 无业务逻辑情况下，
-moon(unix domain socket fastcgi) 与 php-fpm 的响应性能基本没有差别，
-所以，各位大爷(包括我)，不要争论使用哪种语言开发的动态页面响应速度更快了，
-在强大的 cpu 和内存面前， s.m. is cloud all the time!
+By using webbench across machines , high-speed network environment testing, dynamic pages to acquire, under no circumstances the business logic ,
+moon (unix domain socket fastcgi) and response performance php-fpm basically no difference,
+So , ladies and uncle ( including me ) , do not argue what language to use dynamic pages faster response speed ,
+In the face of powerful cpu and memory , sm is cloud all the time!
 
 
 
-目录结构
+Directory Structure
 =======
 
-moon/
-|-- Make.env    编译相关宏定义
-|-- Makefile    编译文件
-|-- maketool    编译辅助工具
-|-- mtools      常用管理脚本
-|-- lib         内部公共库文件目录
-|-- doc         文档目录(杂七杂八)
-|-- res         设计资源(杂七杂八)
+moon /
+| - Make.env compile the macro definition
+| - Makefile to compile files
+| - Maketool compiled aids
+| - Mtools common management script
+| - Lib directory inside the public library
+| - Doc documentation directory ( assorted )
+| - Res Design Resources ( assorted )
 |
-|-- event       支持插件的高并发处理缓冲层后台, 详情请参考该目录文档和代码
-|-- deliver     web push 解决方案 (参考 deliver/README)
-|-- eii         中文分词工具(暂无内容)
-|-- grabber     获取邮件, msn, qq 好友方案
+| - Event support high concurrent processing plug- buffer layer background , please refer to the documentation and code directory
+| - Deliver web push solution ( refer to deliver / README)
+| - Eii Chinese word segmentation tool ( Coming soon )
+| - Grabber to get the mail , msn, qq Friends program
 |
-|-- regae       应用初始框架(skeleton)
-|-- ksa         应用: www.kosherall.com.cn 内容(moon 支持同时多个项目的开发:)
-|-- dida        应用: www.imdida.org 嘀嗒网
-|-- sora        应用: www.union.com 三联服务
+| - Regae initial application framework (skeleton)
+| - Ksa Application : www.kosherall.com.cn content (moon supports simultaneous development of multiple projects :)
+| - Dida Application : www.imdida.org ticking Network
+| - Sora Application : www.union.com triple Service
 |
-`-- memorypark  已作废应用(墓地)
-    |-- funk    www.regae.com 送菜网(建设中。。。(暂作废))
-    |-- moc     在线互动系统(mini but extensiable online communication system)
-    |-- ksc     DEPRECATED
-    !-- pop     应用: www.bomdoo.com 播豆网
-    |-- bull    应用: www.hnycs.com
-    |-- sora    应用: sora.com?
-    `-- rock    DEPRECATED
+`- Memorypark obsolete applications ( cemetery )
+    | - Funk www.regae.com send food network ( construction ( temporarily set aside ) ...).
+    | - Moc online interactive system (mini but extensiable online communication system)
+    | - Ksc DEPRECATED
+    ! - Pop Application : www.bomdoo.com sowing beans Network
+    | - Bull Applications : www.hnycs.com
+    | - Sora Application : sora.com?
+    `- Rock DEPRECATED
 
 
 
-开发环境
+Development environment
 ======
 
-[# useradd -d /opt -g code -N forge]
-# mkdir -p /var/log/moon/ && chmod 777 /var/log/moon/
-$ git clone git://github.com/bigml/cmoon.git
+[# Useradd-d / opt-g code-N forge]
+# Mkdir-p / var / log / moon / && chmod 777 / var / log / moon /
+$ Git clone git :/ / github.com / bigml / cmoon.git
 
 
-系统安装
+System Installation
 ------
-    Debian                                      RedHat
+    Debian RedHat
     apt-get install locales
     dpkg-reconfigure locales
     git
-    git-core                                    git.i386
+    git-core git.i386
     lighttpd
-    spawn-fcgi                                  spawn-fcgi.i386
-    postgresql                                  postgresql-server.i386
-    libpq-dev                                   postgresql84-devel.i386
-    libevent-dev                                libevent-devel.i386
-    libfcgi-dev                                 fcgi-devel.i386 (http://www.fastcgi.com/dist/fcgi.tar.gz)
-    libmemcached-dev                            libmemcached-devel.i386
-    libjson0-dev                                https://github.com/jehiah/json-c
-    libgd2-xpm-dev                              gd-devel.386
+    spawn-fcgi spawn-fcgi.i386
+    postgresql postgresql-server.i386
+    libpq-dev postgresql84-devel.i386
+    libevent-dev libevent-devel.i386
+    libfcgi-dev fcgi-devel.i386 (http://www.fastcgi.com/dist/fcgi.tar.gz)
+    libmemcached-dev libmemcached-devel.i386
+    libjson0-dev https://github.com/jehiah/json-c
+    libgd2-xpm-dev gd-devel.386
     pkg-config
 
-/usr/local/src/ 目录下手动安装
+under / usr / local / src / directory manually installed
 ---------------------------
-    clearsilver     http://clearsilver.googlecode.com/svn/trunk/ clearsilver
+    clearsilver http://clearsilver.googlecode.com/svn/trunk/ clearsilver
                     depend on streamhtmlparser http://streamhtmlparser.googlecode.com/svn/trunk/ streamhtmlparser
-                    ./autogen.sh --disable-wdb --disable-perl --disable-ruby --disable-java --disable-python
+                    . / autogen.sh - disable-wdb - disable-perl - disable-ruby - disable-java - disable-python
                     mkdir libs
                     cd streamhtmlparser; make; cd ..
-                    cp streamhtmlparser/.libs/libstreamhtmlparser.so libs/
-                    cp streamhtmlparser/.libs/* /usr/local/lib/
-                    mkdir -p man/man3/
+                    cp streamhtmlparser / .libs / libstreamhtmlparser.so libs /
+                    cp streamhtmlparser / .libs / * / usr / local / lib /
+                    mkdir-p man/man3 /
                     touch man/man3/1.3
-                    (clearsilver代码需稍作修改，patch -p0 -i lib/cs.diff, 可能需要 path -i lib/rules.diff)
+                    (clearsilver code requires some modifications , patch-p0-i lib / cs.diff, may require path-i lib / rules.diff)
                     make
-    eMail           git://github.com/bigml/eMail.git
-                    depend on dlib git://github.com/deanproxy/dlib.git
-    discount        git://github.com/Orc/discount.git
+    eMail git :/ / github.com / bigml / eMail.git
+                    depend on dlib git :/ / github.com / deanproxy / dlib.git
+    discount git :/ / github.com / Orc / discount.git
 
-js第三方库，自己在moon/lib/js/下checkout
+js third-party libraries , in their own moon / lib / js / next checkout
 ------------------------------------
-    jquerytools     git://github.com/bigml/jquerytools.git
-    flot            git://github.com/flot/flot.git
-    cycle           git://github.com/malsup/cycle.git
-    noty            git://github.com/needim/noty.git
-    markitup        git://github.com/bigml/1.x.git markitup
-    jqueryuploader  git://github.com/bigml/jqueryUploader.git
+    jquerytools git :/ / github.com / bigml / jquerytools.git
+    flot git :/ / github.com / flot / flot.git
+    cycle git :/ / github.com / malsup / cycle.git
+    noty git :/ / github.com / needim / noty.git
+    markitup git :/ / github.com/bigml/1.x.git markitup
+    jqueryuploader git :/ / github.com / bigml / jqueryUploader.git
 
 
-依赖路径写在 Make.env 中, 如果装好上面软件后还出现编译错误, 请自行修改 Make.env 之 DEPEND LIBRARY 部分.
+Write Make.env path dependence , and also occur after you installed the above software compiler error , please modify DEPEND Make.env the LIBRARY section.
 
-能编译通过后，请参考应用 doc/system.txt 文档准备数据库和 web 服务器环境，便可以开始开发。
+After can compile, please refer to the application doc / system.txt document preparation databases and web server environment , you can begin to develop .
 
 
 
-新建项目(应用)
+New Project ( Application )
 ===========
-I 在moon内部新建
+I inside the moon New
 -------------
-    1, cp regae NEWPROJ (请确保软链接也被正确复制 find . -type l -exec ls -l {} \;)
-    2, cd NEWPROJ; sed -i 's/voov/PROJNAME/g' `grep -rl voov .`
-    3, find -name '*voov*'; rename them
-    4, mkdir -p /var/log/moon/NEWPROJ/; chmod 777 /var/log/moon/NEWPROJ/
+    1, cp regae NEWPROJ ( make sure soft link is also copied correctly find.-Type l-exec ls-l {} \ ;)
+    2, cd NEWPROJ; sed-i 's / voov / PROJNAME / g' `grep-rl voov`.
+    3, find-name '* voov *'; rename them
+    4, mkdir-p / var / log / moon / NEWPROJ /; chmod 777 / var / log / moon / NEWPROJ /
 
-II 在moon外部引用
+II external references moon
 --------------
-    1, 拷贝 regae 目录至需要的 NEWPROJ
-    2, cd NEWPROJ; sed -i 's/voov/PROJNAME/g' `grep -rl voov .`
-    3, find -name '*voov*'; rename them
-    4, mkdir -p /var/log/moon/NEWPROJ/; chmod 777 /var/log/moon/NEWPROJ/
+    1 , copy the directory to the desired NEWPROJ regae
+    2, cd NEWPROJ; sed-i 's / voov / PROJNAME / g' `grep-rl voov`.
+    3, find-name '* voov *'; rename them
+    4, mkdir-p / var / log / moon / NEWPROJ /; chmod 777 / var / log / moon / NEWPROJ /
 
-    5, 修改 NEWPROJ//Make.env 之 BASEDIR 路径，指向 moon 所在目录(绝对路径)
-    6, cd NEWPROJ 修改以下文件和目录的连接路径，指向 moon 所在目录
-        ./fly/js/pub
-        ./fly/css/pub
-        ./fly/css/modules/noty -> lib/js/noty/css
-        ./xport/daemon
-        ./xport/plugin/mevent_plugin.h
-        ./xport/plugin/mevent_skeleton.c
-        ./xport/plugin/mevent_skeleton.h
-        ./xport/test/stats.c
+    5 , modify NEWPROJ / / BASEDIR path Make.env , the point where the moon directory ( absolute path )
+    6, cd NEWPROJ modify the connection path to the following files and directories , pointing to the directory where the moon
+        . / fly / js / pub
+        . / fly / css / pub
+        . / fly / css / modules / noty -> lib / js / noty / css
+        . / xport / daemon
+        . / xport / plugin / mevent_plugin.h
+        . / xport / plugin / mevent_skeleton.c
+        . / xport / plugin / mevent_skeleton.h
+        . / xport / test / stats.c
 
 
 
-注:
+Note:
 ==
 
-1. use 4 spaces as TAB, set (setq-default indent-tabs-mode nil) in ~/.emacs
+1. Use 4 spaces as TAB, set (setq-default indent-tabs-mode nil) in ~ /. Emacs
 2. RESERVED key in request url
-    /json/xxx: output json
-    /image/xxx: output image
+    / json / xxx: output json
+    / image / xxx: output image
     _op: add, mod, del for ...
     _nmax: max number
     _nmin: min number
@@ -150,10 +150,11 @@ II 在moon外部引用
     _nst: start number
     _npg: page number (_nst will overwrite _npg)
     _npp: number perpage
-    _type_object: 请求中包含对象/数组时，该参数的值让 viki 将其当作对象解析，多个对象时逗号隔开
+    _type_object: request contains an object / an array, the value of this parameter allows viki parse it as an object , when multiple objects separated by commas
 
-ADD /json/zero/image 上传图片
-    _upfile_data_type: 说明上传文件的数据类型
-        text    文本文件，对应js的 readAsText(file)
-        binstr  二进制流，对应js的 readAsBinaryString(file)
-        dataurl base64编码过的字符串，确保 url 传输安全，对应js的 readAsDataURL(file)
+ADD / json / zero / image upload pictures
+    _upfile_data_type: Description Data Type uploaded file
+        text text file , corresponding js the readAsText (file)
+        binstr binary stream , corresponding js the readAsBinaryString (file)
+        dataurl base64 encoded string url to ensure transmission security , the corresponding js readAsDataURL (file)
+Google Translate for Business:Translator ToolkitWebsite TranslatorGlobal Market Finder
